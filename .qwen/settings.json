@@ -8,7 +8,8 @@
       "Bash(sleep *)",
       "Bash(curl *)",
       "Bash(node *)",
-      "Bash(rm *)"
+      "Bash(rm *)",
+      "Bash(npx *)"
     ]
   },
   "$version": 3
