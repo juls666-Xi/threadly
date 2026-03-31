@@ -3,7 +3,12 @@
     "allow": [
       "Bash(find *)",
       "Bash(npm install)",
-      "Bash(npm start)"
+      "Bash(npm start)",
+      "Bash(npm run *)",
+      "Bash(sleep *)",
+      "Bash(curl *)",
+      "Bash(node *)",
+      "Bash(rm *)"
     ]
   },
   "$version": 3
