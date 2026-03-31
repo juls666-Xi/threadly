@@ -10,8 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MessageSquare, Loader2 } from 'lucide-react';
 
 export default function Register() {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -36,7 +35,7 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      const response = await authAPI.register(username, email, password);
+      const response = await authAPI.register(name, password);
       login(response.token, response.user);
       navigate('/');
     } catch (err: any) {
@@ -66,27 +65,16 @@ export default function Register() {
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="name">Name</Label>
               <Input
-                id="username"
+                id="name"
                 type="text"
-                placeholder="Choose a username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Choose a name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 required
                 minLength={3}
                 maxLength={20}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
               />
             </div>
             <div className="space-y-2">
