@@ -9,7 +9,8 @@
       "Bash(curl *)",
       "Bash(node *)",
       "Bash(rm *)",
-      "Bash(npx *)"
+      "Bash(npx *)",
+      "Bash(vercel *)"
     ]
   },
   "$version": 3
