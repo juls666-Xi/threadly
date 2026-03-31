@@ -1,7 +1,11 @@
 import axios from 'axios';
 import type { User, Post, Message, Conversation, FriendRequest, FriendStatus } from '@/types';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5000';
+
+if (!import.meta.env.VITE_API_URL) {
+  console.warn('VITE_API_URL is not set; using localhost:5000. Set VITE_API_URL in production.');
+}
 
 const api = axios.create({
   baseURL: `${API_URL}/api`,
