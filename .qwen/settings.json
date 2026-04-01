@@ -10,7 +10,12 @@
       "Bash(node *)",
       "Bash(rm *)",
       "Bash(npx *)",
-      "Bash(vercel *)"
+      "Bash(vercel *)",
+      "Bash(git add *)",
+      "Bash(git restore *)",
+      "Bash(git reset *)",
+      "Bash(git commit *)",
+      "Bash(git push)"
     ]
   },
   "$version": 3
