@@ -15,7 +15,12 @@
       "Bash(git restore *)",
       "Bash(git reset *)",
       "Bash(git commit *)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(cat *)",
+      "Bash(eof)",
+      "Bash(git *)",
+      "Bash(grep *)",
+      "Bash(file *)"
     ]
   },
   "$version": 3
