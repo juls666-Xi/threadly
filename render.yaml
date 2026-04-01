@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: social-network-backend
+    runtime: node
+    rootDir: social-network-backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        fromSecret: mongodb_uri
+      - key: JWT_SECRET
+        fromSecret: jwt_secret
+      - key: FRONTEND_URL
+        fromSecret: frontend_url  # Set this to your Vercel frontend URL
+    healthCheckPath: /health
