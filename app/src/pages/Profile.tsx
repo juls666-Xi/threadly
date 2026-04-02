@@ -14,7 +14,6 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from '@/components/ui/sheet';
 import {
   User,
@@ -34,14 +33,12 @@ import {
 } from 'lucide-react';
 import PostCard from '@/components/PostCard';
 import Navbar from '@/components/Navbar';
-import { useIsMobile } from '@/hooks/use-mobile';
 import type { User as UserType, Post, FriendStatus } from '@/types';
 
 export default function Profile() {
   const { id } = useParams<{ id?: string }>();
   const { user: currentUser } = useAuth();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
 
   const [profile, setProfile] = useState<UserType | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
