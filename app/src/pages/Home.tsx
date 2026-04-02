@@ -13,7 +13,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Home, User, Users, MessageCircle, MessageSquare } from 'lucide-react';
+import { Home as HomeIcon, User, Users, MessageCircle, MessageSquare } from 'lucide-react';
 
 export default function Home() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -56,7 +56,7 @@ export default function Home() {
               setSidebarOpen(false);
             }}
           >
-            <Home className="mr-3 h-5 w-5" />
+            <HomeIcon className="mr-3 h-5 w-5" />
             Home
           </Button>
           <Button
