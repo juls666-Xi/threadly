@@ -48,15 +48,31 @@ io.on('connection', (socket) => {
 
   socket.on('join_user', (userId) => {
     socket.join(userId);
+    console.log(`User ${userId} joined room`);
   });
 
   socket.on('send_message', async (data) => {
     try {
-      const message = new Message(data);
+      const { senderId, receiverId, content } = data;
+      const message = new Message({ senderId, receiverId, content });
       await message.save();
-      io.to(data.receiverId).emit('new_message', message);
+      
+      const populatedMessage = await Message.findById(message._id)
+        .populate('senderId', 'name profilePicture');
+      
+      // Transform senderId to include username
+      const transformedMessage = populatedMessage.toObject();
+      if (transformedMessage.senderId) {
+        transformedMessage.senderId = {
+          ...transformedMessage.senderId,
+          username: transformedMessage.senderId.name,
+        };
+      }
+      
+      io.to(receiverId).emit('new_message', transformedMessage);
+      console.log('Message sent:', transformedMessage);
     } catch (err) {
-      console.error('Error sending message:', err);
+      console.error('Error sending message via socket:', err);
     }
   });
 

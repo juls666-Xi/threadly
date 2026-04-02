@@ -20,14 +20,10 @@ class SocketService {
 
     this.socket.on('connect', () => {
       console.log('Socket connected');
-      this.socket?.emit('join', userId);
+      this.socket?.emit('join_user', userId);
     });
 
-    this.socket.on('newMessage', (message: Message) => {
-      this.messageListeners.forEach(listener => listener(message));
-    });
-
-    this.socket.on('messageSent', (message: Message) => {
+    this.socket.on('new_message', (message: Message) => {
       this.messageListeners.forEach(listener => listener(message));
     });
 
@@ -65,7 +61,7 @@ class SocketService {
 
   sendMessage(receiverId: string, content: string) {
     if (this.socket) {
-      this.socket.emit('sendMessage', { receiverId, content });
+      this.socket.emit('send_message', { receiverId, content });
     }
   }
 

@@ -79,10 +79,11 @@ export default function Messages() {
   useEffect(() => {
     const unsubscribe = socketService.onMessage((message) => {
       // Check if message belongs to current conversation
-      const isRelevant =
-        (typeof message.senderId === 'string'
-          ? message.senderId === userId || message.senderId === currentUser?.id
-          : message.senderId._id === userId || message.senderId._id === currentUser?.id);
+      const senderId = typeof message.senderId === 'string' 
+        ? message.senderId 
+        : message.senderId._id || message.senderId.id;
+      
+      const isRelevant = senderId === userId || senderId === currentUser?.id;
 
       if (isRelevant) {
         setMessages((prev) => {
@@ -110,20 +111,31 @@ export default function Messages() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!newMessage.trim() || !userId) return;
 
-    socketService.sendMessage(userId, newMessage.trim());
-    setNewMessage('');
+    try {
+      // Send via API for persistence
+      const sentMessage = await messageAPI.sendMessage(userId, newMessage.trim());
+      
+      // Add message to local state
+      setMessages((prev) => [...prev, sentMessage]);
+      setNewMessage('');
 
-    // Update conversations and friends
-    Promise.all([
-      messageAPI.getInbox(),
-      friendAPI.getFriends(),
-    ]).then(([inboxData, friendsData]) => {
-      setConversations(inboxData);
-      setFriends(friendsData);
-    });
+      // Also emit via socket for real-time delivery
+      socketService.sendMessage(userId, newMessage.trim());
+
+      // Update conversations and friends
+      Promise.all([
+        messageAPI.getInbox(),
+        friendAPI.getFriends(),
+      ]).then(([inboxData, friendsData]) => {
+        setConversations(inboxData);
+        setFriends(friendsData);
+      });
+    } catch (error) {
+      console.error('Failed to send message:', error);
+    }
   };
 
   const handleTyping = () => {
