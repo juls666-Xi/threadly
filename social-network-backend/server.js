@@ -13,6 +13,16 @@ const Message = require('./models/Message');
 const Friend = require('./models/Friend');
 const authMiddleware = require('./middleware/auth');
 
+// Helper function to transform user object for frontend compatibility
+const transformUser = (user) => {
+  if (!user) return null;
+  const userObj = user.toObject ? user.toObject() : user;
+  return {
+    ...userObj,
+    username: userObj.name,
+  };
+};
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -106,7 +116,7 @@ app.post('/api/auth/login', async (req, res) => {
       expiresIn: '7d',
     });
 
-    res.json({ token, user: { id: user._id, name: user.name } });
+    res.json({ token, user: transformUser(user) });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -120,7 +130,7 @@ app.get('/api/users/me', authMiddleware, async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json(user);
+    res.json(transformUser(user));
   } catch (err) {
     console.error('Get user error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -133,7 +143,7 @@ app.get('/api/users/:id', authMiddleware, async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json(user);
+    res.json(transformUser(user));
   } catch (err) {
     console.error('Get user error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -143,7 +153,7 @@ app.get('/api/users/:id', authMiddleware, async (req, res) => {
 app.get('/api/users', authMiddleware, async (req, res) => {
   try {
     const users = await User.find().select('-password');
-    res.json(users);
+    res.json(users.map(transformUser));
   } catch (err) {
     console.error('Get users error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -155,7 +165,7 @@ app.get('/api/users/search/:query', authMiddleware, async (req, res) => {
     const users = await User.find({
       name: { $regex: req.params.query, $options: 'i' },
     }).select('-password');
-    res.json(users);
+    res.json(users.map(transformUser));
   } catch (err) {
     console.error('Search users error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -170,7 +180,7 @@ app.put('/api/users/profile', authMiddleware, async (req, res) => {
       { profilePicture, bio, school, interests },
       { new: true }
     ).select('-password');
-    res.json(user);
+    res.json(transformUser(user));
   } catch (err) {
     console.error('Update profile error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -184,7 +194,17 @@ app.post('/api/posts', authMiddleware, async (req, res) => {
     const post = new Post({ userId: req.userId, content });
     await post.save();
     const populatedPost = await Post.findById(post._id).populate('userId', 'name profilePicture');
-    res.status(201).json(populatedPost);
+    
+    // Transform userId to include username
+    const transformedPost = populatedPost.toObject();
+    if (transformedPost.userId) {
+      transformedPost.userId = {
+        ...transformedPost.userId,
+        username: transformedPost.userId.name,
+      };
+    }
+    
+    res.status(201).json(transformedPost);
   } catch (err) {
     console.error('Create post error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -194,7 +214,20 @@ app.post('/api/posts', authMiddleware, async (req, res) => {
 app.get('/api/posts', authMiddleware, async (req, res) => {
   try {
     const posts = await Post.find().populate('userId', 'name profilePicture').sort({ createdAt: -1 });
-    res.json(posts);
+    
+    // Transform userId to include username
+    const transformedPosts = posts.map(post => {
+      const postObj = post.toObject();
+      if (postObj.userId) {
+        postObj.userId = {
+          ...postObj.userId,
+          username: postObj.userId.name,
+        };
+      }
+      return postObj;
+    });
+    
+    res.json(transformedPosts);
   } catch (err) {
     console.error('Get posts error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -206,7 +239,20 @@ app.get('/api/posts/user/:userId', authMiddleware, async (req, res) => {
     const posts = await Post.find({ userId: req.params.userId })
       .populate('userId', 'name profilePicture')
       .sort({ createdAt: -1 });
-    res.json(posts);
+    
+    // Transform userId to include username
+    const transformedPosts = posts.map(post => {
+      const postObj = post.toObject();
+      if (postObj.userId) {
+        postObj.userId = {
+          ...postObj.userId,
+          username: postObj.userId.name,
+        };
+      }
+      return postObj;
+    });
+    
+    res.json(transformedPosts);
   } catch (err) {
     console.error('Get user posts error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -259,7 +305,20 @@ app.get('/api/friends/requests', authMiddleware, async (req, res) => {
   try {
     const requests = await Friend.find({ recipient: req.userId, status: 'pending' })
       .populate('requester', 'name profilePicture');
-    res.json(requests);
+    
+    // Transform requester to include username
+    const transformedRequests = requests.map(request => {
+      const requestObj = request.toObject();
+      if (requestObj.requester) {
+        requestObj.requester = {
+          ...requestObj.requester,
+          username: requestObj.requester.name,
+        };
+      }
+      return requestObj;
+    });
+    
+    res.json(transformedRequests);
   } catch (err) {
     console.error('Get friend requests error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -315,7 +374,7 @@ app.get('/api/friends', authMiddleware, async (req, res) => {
     );
 
     const friends = await User.find({ _id: { $in: friendIds } }).select('-password');
-    res.json(friends);
+    res.json(friends.map(transformUser));
   } catch (err) {
     console.error('Get friends error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -381,8 +440,17 @@ app.post('/api/messages', authMiddleware, async (req, res) => {
     const populatedMessage = await Message.findById(message._id)
       .populate('senderId', 'name profilePicture');
 
-    io.to(receiverId).emit('new_message', populatedMessage);
-    res.status(201).json(populatedMessage);
+    // Transform senderId to include username
+    const transformedMessage = populatedMessage.toObject();
+    if (transformedMessage.senderId) {
+      transformedMessage.senderId = {
+        ...transformedMessage.senderId,
+        username: transformedMessage.senderId.name,
+      };
+    }
+
+    io.to(receiverId).emit('new_message', transformedMessage);
+    res.status(201).json(transformedMessage);
   } catch (err) {
     console.error('Send message error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -400,12 +468,24 @@ app.get('/api/messages/conversation/:userId', authMiddleware, async (req, res) =
       .populate('senderId', 'name profilePicture')
       .sort({ createdAt: 1 });
 
+    // Transform senderId to include username
+    const transformedMessages = messages.map(msg => {
+      const msgObj = msg.toObject();
+      if (msgObj.senderId) {
+        msgObj.senderId = {
+          ...msgObj.senderId,
+          username: msgObj.senderId.name,
+        };
+      }
+      return msgObj;
+    });
+
     await Message.updateMany(
       { senderId: req.params.userId, receiverId: req.userId, isRead: false },
       { isRead: true }
     );
 
-    res.json(messages);
+    res.json(transformedMessages);
   } catch (err) {
     console.error('Get conversation error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -432,7 +512,11 @@ app.get('/api/messages/inbox', authMiddleware, async (req, res) => {
     const senders = await User.find({ _id: { $in: senderIds } }).select('-password');
     const senderMap = {};
     senders.forEach((s) => {
-      senderMap[s._id.toString()] = s;
+      const senderObj = s.toObject();
+      senderMap[s._id.toString()] = {
+        ...senderObj,
+        username: senderObj.name,
+      };
     });
 
     const conversations = messages.map((m) => ({

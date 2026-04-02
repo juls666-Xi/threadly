@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { messageAPI, userAPI } from '@/services/api';
+import { messageAPI, userAPI, friendAPI } from '@/services/api';
 import { socketService } from '@/services/socket';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,33 +11,44 @@ import { User, Send, ArrowLeft, Loader2, MessageSquare } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import type { Message, User as UserType, Conversation } from '@/types';
 
+interface ExtendedConversation extends Conversation {
+  friend: UserType;
+  lastMessage?: Message;
+  unreadCount: number;
+}
+
 export default function Messages() {
   const { userId } = useParams<{ userId?: string }>();
   const { user: currentUser } = useAuth();
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+
+  const [conversations, setConversations] = useState<ExtendedConversation[]>([]);
+  const [friends, setFriends] = useState<UserType[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Fetch conversations (inbox)
+  // Fetch conversations (inbox) and friends
   useEffect(() => {
-    const fetchConversations = async () => {
+    const fetchData = async () => {
       try {
-        const data = await messageAPI.getInbox();
-        setConversations(data);
+        const [inboxData, friendsData] = await Promise.all([
+          messageAPI.getInbox(),
+          friendAPI.getFriends(),
+        ]);
+        setConversations(inboxData);
+        setFriends(friendsData);
       } catch (error) {
-        console.error('Failed to fetch conversations:', error);
+        console.error('Failed to fetch data:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchConversations();
+    fetchData();
   }, []);
 
   // Load selected conversation
@@ -68,11 +79,11 @@ export default function Messages() {
   useEffect(() => {
     const unsubscribe = socketService.onMessage((message) => {
       // Check if message belongs to current conversation
-      const isRelevant = 
-        (typeof message.senderId === 'string' 
+      const isRelevant =
+        (typeof message.senderId === 'string'
           ? message.senderId === userId || message.senderId === currentUser?.id
           : message.senderId._id === userId || message.senderId._id === currentUser?.id);
-      
+
       if (isRelevant) {
         setMessages((prev) => {
           // Avoid duplicates
@@ -81,8 +92,14 @@ export default function Messages() {
         });
       }
 
-      // Update conversations list
-      messageAPI.getInbox().then(setConversations);
+      // Update conversations and friends
+      Promise.all([
+        messageAPI.getInbox(),
+        friendAPI.getFriends(),
+      ]).then(([inboxData, friendsData]) => {
+        setConversations(inboxData);
+        setFriends(friendsData);
+      });
     });
 
     return () => unsubscribe();
@@ -98,9 +115,15 @@ export default function Messages() {
 
     socketService.sendMessage(userId, newMessage.trim());
     setNewMessage('');
-    
-    // Update conversations
-    messageAPI.getInbox().then(setConversations);
+
+    // Update conversations and friends
+    Promise.all([
+      messageAPI.getInbox(),
+      friendAPI.getFriends(),
+    ]).then(([inboxData, friendsData]) => {
+      setConversations(inboxData);
+      setFriends(friendsData);
+    });
   };
 
   const handleTyping = () => {
@@ -139,6 +162,39 @@ export default function Messages() {
     }
   };
 
+  // Merge friends with conversations
+  const getAllConversations = (): ExtendedConversation[] => {
+    const conversationMap = new Map<string, ExtendedConversation>();
+    
+    // Add existing conversations
+    conversations.forEach(conv => {
+      conversationMap.set(conv.friend.id, conv);
+    });
+    
+    // Add friends without conversations
+    friends.forEach(friend => {
+      if (!conversationMap.has(friend.id)) {
+        conversationMap.set(friend.id, {
+          friend,
+          lastMessage: undefined,
+          unreadCount: 0,
+        });
+      }
+    });
+    
+    return Array.from(conversationMap.values()).sort((a, b) => {
+      // Sort by last message date (most recent first), then by username
+      if (a.lastMessage && b.lastMessage) {
+        return new Date(b.lastMessage.createdAt).getTime() - new Date(a.lastMessage.createdAt).getTime();
+      }
+      if (a.lastMessage) return -1;
+      if (b.lastMessage) return 1;
+      return a.friend.username.localeCompare(b.friend.username);
+    });
+  };
+
+  const allConversations = getAllConversations();
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-blue-50">
@@ -163,12 +219,12 @@ export default function Messages() {
                 <h2 className="font-semibold text-lg text-blue-900">Messages</h2>
               </div>
               <ScrollArea className="h-[calc(100%-60px)]">
-                {conversations.length === 0 ? (
+                {allConversations.length === 0 ? (
                   <div className="p-4 text-center text-gray-500">
-                    No conversations yet
+                    No friends yet. Find friends to start messaging!
                   </div>
                 ) : (
-                  conversations.map((conv) => (
+                  allConversations.map((conv) => (
                     <div
                       key={conv.friend.id}
                       className={`p-4 border-b border-blue-50 cursor-pointer hover:bg-blue-50 transition-colors ${
@@ -195,7 +251,7 @@ export default function Messages() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="font-medium text-sm truncate">{conv.friend.username}</h4>
-                          {conv.lastMessage && (
+                          {conv.lastMessage ? (
                             <p className="text-xs text-gray-500 truncate">
                               {typeof conv.lastMessage.senderId === 'string'
                                 ? conv.lastMessage.content
@@ -203,6 +259,8 @@ export default function Messages() {
                                 ? `You: ${conv.lastMessage.content}`
                                 : conv.lastMessage.content}
                             </p>
+                          ) : (
+                            <p className="text-xs text-gray-400">Start a conversation</p>
                           )}
                         </div>
                         {conv.unreadCount > 0 && (
