@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { User, Send, ArrowLeft, Loader2, MessageSquare } from 'lucide-react';
+import { User, Send, ArrowLeft, Loader2, MessageSquare, Paperclip, X } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import type { Message, User as UserType, Conversation } from '@/types';
 
@@ -28,8 +28,10 @@ export default function Messages() {
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch conversations (inbox) and friends
   useEffect(() => {
@@ -112,15 +114,19 @@ export default function Messages() {
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !userId) return;
+    if ((!newMessage.trim() && !selectedFile) || !userId) return;
 
     try {
       // Send via API for persistence
-      const sentMessage = await messageAPI.sendMessage(userId, newMessage.trim());
-      
+      const sentMessage = await messageAPI.sendMessage(userId, newMessage.trim(), selectedFile || undefined);
+
       // Add message to local state
       setMessages((prev) => [...prev, sentMessage]);
       setNewMessage('');
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
 
       // Also emit via socket for real-time delivery
       socketService.sendMessage(userId, newMessage.trim());
@@ -150,6 +156,33 @@ export default function Messages() {
     typingTimeoutRef.current = setTimeout(() => {
       socketService.stopTyping(userId);
     }, 1000);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('File size must be less than 10MB');
+        return;
+      }
+      setSelectedFile(file);
+    }
+  };
+
+  const removeSelectedFile = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   };
 
   const formatTime = (dateString: string) => {
@@ -366,6 +399,45 @@ export default function Messages() {
                                     : 'bg-gray-100 text-gray-800 rounded-bl-none'
                                 }`}
                               >
+                                {/* Attachment display */}
+                                {message.attachment && (() => {
+                                  const attachment = message.attachment;
+                                  return (
+                                    <div className="mb-2">
+                                      {attachment.mimeType.startsWith('image/') ? (
+                                        <img
+                                          src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${attachment.url}`}
+                                          alt={attachment.filename}
+                                          className="max-w-full rounded-lg cursor-pointer hover:opacity-90"
+                                          onClick={() => window.open(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${attachment.url}`, '_blank')}
+                                        />
+                                      ) : attachment.mimeType.startsWith('video/') ? (
+                                        <video
+                                          src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${attachment.url}`}
+                                          controls
+                                          className="max-w-full rounded-lg"
+                                        />
+                                      ) : attachment.mimeType.startsWith('audio/') ? (
+                                        <audio
+                                          src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${attachment.url}`}
+                                          controls
+                                          className="w-full"
+                                        />
+                                      ) : (
+                                        <a
+                                          href={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${attachment.url}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className={`flex items-center space-x-2 p-2 rounded-lg ${isOwn ? 'bg-blue-700' : 'bg-gray-200'} hover:opacity-80`}
+                                        >
+                                          <Paperclip className="h-4 w-4" />
+                                          <span className="text-sm truncate">{attachment.filename}</span>
+                                          <span className="text-xs opacity-75">({formatFileSize(attachment.size)})</span>
+                                        </a>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
                                 <p>{message.content}</p>
                                 <p className={`text-xs mt-1 ${isOwn ? 'text-blue-200' : 'text-gray-500'}`}>
                                   {formatTime(message.createdAt)}
@@ -383,7 +455,44 @@ export default function Messages() {
 
                 {/* Input Area */}
                 <div className="p-4 border-t border-blue-100">
+                  {/* File preview */}
+                  {selectedFile && (
+                    <div className="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200 flex items-center justify-between">
+                      <div className="flex items-center space-x-3 min-w-0 flex-1">
+                        <Paperclip className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-gray-900 truncate">{selectedFile.name}</p>
+                          <p className="text-xs text-gray-500">{formatFileSize(selectedFile.size)}</p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={removeSelectedFile}
+                        className="flex-shrink-0 h-8 w-8"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                  
                   <div className="flex space-x-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                      accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex-shrink-0"
+                    >
+                      <Paperclip className="h-4 w-4" />
+                    </Button>
                     <Input
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
@@ -392,10 +501,10 @@ export default function Messages() {
                       placeholder="Type a message..."
                       className="flex-1"
                     />
-                    <Button 
+                    <Button
                       onClick={handleSendMessage}
-                      disabled={!newMessage.trim()}
-                      className="bg-blue-600 hover:bg-blue-700"
+                      disabled={!newMessage.trim() && !selectedFile}
+                      className="bg-blue-600 hover:bg-blue-700 flex-shrink-0"
                     >
                       <Send className="h-4 w-4" />
                     </Button>

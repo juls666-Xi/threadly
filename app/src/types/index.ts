@@ -20,11 +20,19 @@ export interface Post {
   updatedAt?: string;
 }
 
+export interface MessageAttachment {
+  url: string;
+  filename: string;
+  mimeType: string;
+  size: number;
+}
+
 export interface Message {
   _id: string;
   senderId: User | string;
   receiverId: User | string;
   content: string;
+  attachment?: MessageAttachment;
   isRead: boolean;
   createdAt: string;
 }

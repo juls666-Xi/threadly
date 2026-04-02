@@ -6,12 +6,50 @@ const http = require('http');
 const { Server } = require('socket.io');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 const User = require('./models/User');
 const Post = require('./models/Post');
 const Message = require('./models/Message');
 const Friend = require('./models/Friend');
 const authMiddleware = require('./middleware/auth');
+
+// Multer configuration for file uploads
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  // Allow images, videos, audio, and documents
+  const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt|mp4|webm|mp3|wav/;
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = allowedTypes.test(file.mimetype);
+
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only images, videos, audio, and documents are allowed.'));
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: fileFilter
+});
 
 // Helper function to transform user object for frontend compatibility
 const transformUser = (user) => {
@@ -448,10 +486,27 @@ app.delete('/api/friends/:friendId', authMiddleware, async (req, res) => {
 });
 
 // Message routes
-app.post('/api/messages', authMiddleware, async (req, res) => {
+// Send message with optional file attachment
+app.post('/api/messages', authMiddleware, upload.single('attachment'), async (req, res) => {
   try {
     const { receiverId, content } = req.body;
-    const message = new Message({ senderId: req.userId, receiverId, content });
+    
+    let attachment = null;
+    if (req.file) {
+      attachment = {
+        url: `/uploads/${req.file.filename}`,
+        filename: req.file.originalname,
+        mimeType: req.file.mimetype,
+        size: req.file.size
+      };
+    }
+
+    const message = new Message({ 
+      senderId: req.userId, 
+      receiverId, 
+      content,
+      attachment
+    });
     await message.save();
 
     const populatedMessage = await Message.findById(message._id)
@@ -463,6 +518,7 @@ app.post('/api/messages', authMiddleware, async (req, res) => {
       transformedMessage.senderId = {
         ...transformedMessage.senderId,
         username: transformedMessage.senderId.name,
+        id: transformedMessage.senderId._id.toString(),
       };
     }
 
@@ -473,6 +529,9 @@ app.post('/api/messages', authMiddleware, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+// Serve uploaded files
+app.use('/uploads', express.static(uploadDir));
 
 app.get('/api/messages/conversation/:userId', authMiddleware, async (req, res) => {
   try {
@@ -485,13 +544,14 @@ app.get('/api/messages/conversation/:userId', authMiddleware, async (req, res) =
       .populate('senderId', 'name profilePicture')
       .sort({ createdAt: 1 });
 
-    // Transform senderId to include username
+    // Transform senderId to include username and id
     const transformedMessages = messages.map(msg => {
       const msgObj = msg.toObject();
       if (msgObj.senderId) {
         msgObj.senderId = {
           ...msgObj.senderId,
           username: msgObj.senderId.name,
+          id: msgObj.senderId._id.toString(),
         };
       }
       return msgObj;

@@ -132,9 +132,23 @@ export const friendAPI = {
 
 // Message API
 export const messageAPI = {
-  sendMessage: async (receiverId: string, content: string): Promise<Message> => {
-    const response = await api.post('/messages', { receiverId, content });
-    return response.data;
+  sendMessage: async (receiverId: string, content: string, file?: File): Promise<Message> => {
+    if (file) {
+      const formData = new FormData();
+      formData.append('receiverId', receiverId);
+      formData.append('content', content);
+      formData.append('attachment', file);
+
+      const response = await api.post('/messages', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } else {
+      const response = await api.post('/messages', { receiverId, content });
+      return response.data;
+    }
   },
   
   getConversation: async (userId: string): Promise<Message[]> => {
