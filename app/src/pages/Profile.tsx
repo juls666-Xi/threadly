@@ -9,33 +9,46 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  User, 
-  MapPin, 
-  Heart, 
-  Edit2, 
-  Check, 
-  X, 
-  UserPlus, 
-  UserCheck, 
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import {
+  User,
+  MapPin,
+  Heart,
+  Edit2,
+  Check,
+  X,
+  UserPlus,
+  UserCheck,
   Clock,
   MessageCircle,
-  Loader2
+  Loader2,
+  Menu,
+  Home,
+  Users,
 } from 'lucide-react';
 import PostCard from '@/components/PostCard';
 import Navbar from '@/components/Navbar';
+import { useIsMobile } from '@/hooks/use-mobile';
 import type { User as UserType, Post, FriendStatus } from '@/types';
 
 export default function Profile() {
   const { id } = useParams<{ id?: string }>();
   const { user: currentUser } = useAuth();
   const navigate = useNavigate();
-  
+  const isMobile = useIsMobile();
+
   const [profile, setProfile] = useState<UserType | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [friendStatus, setFriendStatus] = useState<FriendStatus>({ status: 'none' });
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [editData, setEditData] = useState({
     bio: '',
     school: '',
@@ -143,6 +156,67 @@ export default function Profile() {
     }
   };
 
+  const MobileSidebar = () => (
+    <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+      <SheetContent side="left" className="w-64 bg-white p-0">
+        <SheetHeader className="border-b border-blue-100 p-4">
+          <SheetTitle className="flex items-center space-x-2">
+            <div className="bg-blue-600 p-1.5 rounded-lg">
+              <MessageCircle className="h-4 w-4 text-white" />
+            </div>
+            <span className="text-lg font-bold text-blue-900">SocialNet</span>
+          </SheetTitle>
+        </SheetHeader>
+        <nav className="flex flex-col p-4 space-y-2">
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              navigate('/');
+              setSidebarOpen(false);
+            }}
+          >
+            <Home className="mr-3 h-5 w-5" />
+            Home
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              navigate('/profile');
+              setSidebarOpen(false);
+            }}
+          >
+            <User className="mr-3 h-5 w-5" />
+            Profile
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              navigate('/friends');
+              setSidebarOpen(false);
+            }}
+          >
+            <Users className="mr-3 h-5 w-5" />
+            Friends
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              navigate('/messages');
+              setSidebarOpen(false);
+            }}
+          >
+            <MessageCircle className="mr-3 h-5 w-5" />
+            Messages
+          </Button>
+        </nav>
+      </SheetContent>
+    </Sheet>
+  );
+
   const renderFriendButton = () => {
     if (isOwnProfile) return null;
 
@@ -217,8 +291,17 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-blue-50">
       <Navbar />
-      
+      <MobileSidebar />
+
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Mobile menu trigger */}
+        <div className="md:hidden mb-4">
+          <Button variant="outline" onClick={() => setSidebarOpen(true)}>
+            <Menu className="mr-2 h-4 w-4" />
+            Menu
+          </Button>
+        </div>
+
         {/* Profile Header */}
         <Card className="mb-6">
           <CardContent className="p-6">
