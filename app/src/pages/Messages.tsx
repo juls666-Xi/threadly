@@ -243,6 +243,13 @@ export default function Messages() {
                         userId === conv.friend.id ? 'bg-blue-50' : ''
                       }`}
                       onClick={() => navigate(`/messages/${conv.friend.id}`)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          navigate(`/messages/${conv.friend.id}`);
+                        }
+                      }}
                     >
                       <div className="flex items-center space-x-3">
                         <div className="relative">
