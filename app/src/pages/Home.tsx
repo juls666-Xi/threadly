@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { socketService } from '@/services/socket';
@@ -6,10 +6,19 @@ import Navbar from '@/components/Navbar';
 import LeftSidebar from '@/components/LeftSidebar';
 import RightSidebar from '@/components/RightSidebar';
 import Feed from '@/components/Feed';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { Home, User, Users, MessageCircle, MessageSquare } from 'lucide-react';
 
 export default function Home() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -27,6 +36,67 @@ export default function Home() {
     };
   }, [user?.id]);
 
+  const MobileSidebar = () => (
+    <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+      <SheetContent side="left" className="w-64 bg-white p-0">
+        <SheetHeader className="border-b border-blue-100 p-4">
+          <SheetTitle className="flex items-center space-x-2">
+            <div className="bg-blue-600 p-1.5 rounded-lg">
+              <MessageSquare className="h-4 w-4 text-white" />
+            </div>
+            <span className="text-lg font-bold text-blue-900">SocialNet</span>
+          </SheetTitle>
+        </SheetHeader>
+        <nav className="flex flex-col p-4 space-y-2">
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              navigate('/');
+              setSidebarOpen(false);
+            }}
+          >
+            <Home className="mr-3 h-5 w-5" />
+            Home
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              navigate('/profile');
+              setSidebarOpen(false);
+            }}
+          >
+            <User className="mr-3 h-5 w-5" />
+            Profile
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              navigate('/friends');
+              setSidebarOpen(false);
+            }}
+          >
+            <Users className="mr-3 h-5 w-5" />
+            Friends
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              navigate('/messages');
+              setSidebarOpen(false);
+            }}
+          >
+            <MessageCircle className="mr-3 h-5 w-5" />
+            Messages
+          </Button>
+        </nav>
+      </SheetContent>
+    </Sheet>
+  );
+
   if (isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -37,8 +107,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-blue-50">
-      <Navbar />
-      
+      <Navbar onMenuClick={() => setSidebarOpen(true)} />
+      <MobileSidebar />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Sidebar */}
