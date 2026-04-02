@@ -12,10 +12,20 @@ export interface User {
   createdAt?: string;
 }
 
+export interface Comment {
+  id: string;
+  userId: User | null;
+  content: string;
+  createdAt: string;
+}
+
 export interface Post {
   _id: string;
   userId: User | string;
   content: string;
+  upvotes: User[];
+  upvoteCount: number;
+  comments: Comment[];
   createdAt: string;
   updatedAt?: string;
 }

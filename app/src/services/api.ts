@@ -90,6 +90,21 @@ export const postAPI = {
     const response = await api.delete(`/posts/${postId}`);
     return response.data;
   },
+
+  upvotePost: async (postId: string): Promise<Post> => {
+    const response = await api.post(`/posts/${postId}/upvote`);
+    return response.data;
+  },
+
+  addComment: async (postId: string, content: string): Promise<Post> => {
+    const response = await api.post(`/posts/${postId}/comments`, { content });
+    return response.data;
+  },
+
+  deleteComment: async (postId: string, commentId: string): Promise<Post> => {
+    const response = await api.delete(`/posts/${postId}/comments/${commentId}`);
+    return response.data;
+  },
 };
 
 // Friend API

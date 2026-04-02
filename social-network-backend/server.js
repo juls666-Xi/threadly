@@ -248,17 +248,12 @@ app.post('/api/posts', authMiddleware, async (req, res) => {
     const { content } = req.body;
     const post = new Post({ userId: req.userId, content });
     await post.save();
-    const populatedPost = await Post.findById(post._id).populate('userId', 'name profilePicture');
-    
-    // Transform userId to include username
-    const transformedPost = populatedPost.toObject();
-    if (transformedPost.userId) {
-      transformedPost.userId = {
-        ...transformedPost.userId,
-        username: transformedPost.userId.name,
-      };
-    }
-    
+    const populatedPost = await Post.findById(post._id)
+      .populate('userId', 'name profilePicture')
+      .populate('upvotes', 'name profilePicture')
+      .populate('comments.userId', 'name profilePicture');
+
+    const transformedPost = populatePostTransform(populatedPost);
     res.status(201).json(transformedPost);
   } catch (err) {
     console.error('Create post error:', err);
@@ -268,20 +263,14 @@ app.post('/api/posts', authMiddleware, async (req, res) => {
 
 app.get('/api/posts', authMiddleware, async (req, res) => {
   try {
-    const posts = await Post.find().populate('userId', 'name profilePicture').sort({ createdAt: -1 });
-    
-    // Transform userId to include username
-    const transformedPosts = posts.map(post => {
-      const postObj = post.toObject();
-      if (postObj.userId) {
-        postObj.userId = {
-          ...postObj.userId,
-          username: postObj.userId.name,
-        };
-      }
-      return postObj;
-    });
-    
+    const posts = await Post.find()
+      .populate('userId', 'name profilePicture')
+      .populate('upvotes', 'name profilePicture')
+      .populate('comments.userId', 'name profilePicture')
+      .sort({ createdAt: -1 });
+
+    const transformedPosts = posts.map(post => populatePostTransform(post));
+
     res.json(transformedPosts);
   } catch (err) {
     console.error('Get posts error:', err);
@@ -293,20 +282,12 @@ app.get('/api/posts/user/:userId', authMiddleware, async (req, res) => {
   try {
     const posts = await Post.find({ userId: req.params.userId })
       .populate('userId', 'name profilePicture')
+      .populate('upvotes', 'name profilePicture')
+      .populate('comments.userId', 'name profilePicture')
       .sort({ createdAt: -1 });
-    
-    // Transform userId to include username
-    const transformedPosts = posts.map(post => {
-      const postObj = post.toObject();
-      if (postObj.userId) {
-        postObj.userId = {
-          ...postObj.userId,
-          username: postObj.userId.name,
-        };
-      }
-      return postObj;
-    });
-    
+
+    const transformedPosts = posts.map(post => populatePostTransform(post));
+
     res.json(transformedPosts);
   } catch (err) {
     console.error('Get user posts error:', err);
@@ -326,6 +307,138 @@ app.delete('/api/posts/:id', authMiddleware, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+// Upvote a post
+app.post('/api/posts/:id/upvote', authMiddleware, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    const userId = new mongoose.Types.ObjectId(req.userId);
+    const upvoteIndex = post.upvotes.findIndex(id => id.toString() === req.userId);
+
+    if (upvoteIndex > -1) {
+      // Toggle off upvote
+      post.upvotes.splice(upvoteIndex, 1);
+    } else {
+      // Add upvote
+      post.upvotes.push(userId);
+    }
+
+    await post.save();
+
+    const populatedPost = await Post.findById(post._id)
+      .populate('userId', 'name profilePicture')
+      .populate('upvotes', 'name profilePicture');
+
+    const transformedPost = populatePostTransform(populatedPost);
+    res.json(transformedPost);
+  } catch (err) {
+    console.error('Upvote post error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Add comment to a post
+app.post('/api/posts/:id/comments', authMiddleware, async (req, res) => {
+  try {
+    const { content } = req.body;
+    if (!content || content.trim() === '') {
+      return res.status(400).json({ message: 'Comment content is required' });
+    }
+
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    post.comments.push({
+      userId: req.userId,
+      content: content.trim()
+    });
+
+    await post.save();
+
+    const populatedPost = await Post.findById(post._id)
+      .populate('userId', 'name profilePicture')
+      .populate('upvotes', 'name profilePicture')
+      .populate('comments.userId', 'name profilePicture');
+
+    const transformedPost = populatePostTransform(populatedPost);
+    res.status(201).json(transformedPost);
+  } catch (err) {
+    console.error('Add comment error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Delete comment from a post
+app.delete('/api/posts/:postId/comments/:commentId', authMiddleware, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    const comment = post.comments.id(req.params.commentId);
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    // Only allow comment author or post author to delete
+    if (comment.userId.toString() !== req.userId && post.userId.toString() !== req.userId) {
+      return res.status(403).json({ message: 'Not authorized to delete this comment' });
+    }
+
+    comment.deleteOne();
+    await post.save();
+
+    const populatedPost = await Post.findById(post._id)
+      .populate('userId', 'name profilePicture')
+      .populate('upvotes', 'name profilePicture')
+      .populate('comments.userId', 'name profilePicture');
+
+    const transformedPost = populatePostTransform(populatedPost);
+    res.json(transformedPost);
+  } catch (err) {
+    console.error('Delete comment error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Helper function to transform post with upvotes and comments
+const populatePostTransform = (post) => {
+  const postObj = post.toObject();
+  if (postObj.userId) {
+    postObj.userId = {
+      ...postObj.userId,
+      username: postObj.userId.name,
+      id: postObj.userId._id.toString(),
+    };
+  }
+  if (postObj.upvotes) {
+    postObj.upvoteCount = postObj.upvotes.length;
+    postObj.upvotes = postObj.upvotes.map(user => ({
+      ...user,
+      username: user.name,
+      id: user._id.toString(),
+    }));
+  }
+  if (postObj.comments) {
+    postObj.comments = postObj.comments.map(comment => ({
+      ...comment,
+      id: comment._id.toString(),
+      userId: comment.userId ? {
+        ...comment.userId,
+        username: comment.userId.name,
+        id: comment.userId._id.toString(),
+      } : null,
+    }));
+  }
+  return postObj;
+};
 
 // Friend routes
 app.post('/api/friends/request', authMiddleware, async (req, res) => {
