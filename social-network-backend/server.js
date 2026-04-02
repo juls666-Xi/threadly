@@ -236,8 +236,8 @@ app.post('/api/friends/request', authMiddleware, async (req, res) => {
 
     const existingRequest = await Friend.findOne({
       $or: [
-        { senderId: req.userId, receiverId: recipientId },
-        { senderId: recipientId, receiverId: req.userId },
+        { requester: req.userId, recipient: recipientId },
+        { requester: recipientId, recipient: req.userId },
       ],
     });
 
@@ -245,7 +245,7 @@ app.post('/api/friends/request', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'Friend request already exists' });
     }
 
-    const friendRequest = new Friend({ senderId: req.userId, receiverId: recipientId });
+    const friendRequest = new Friend({ requester: req.userId, recipient: recipientId });
     await friendRequest.save();
 
     res.status(201).json(friendRequest);
@@ -257,8 +257,8 @@ app.post('/api/friends/request', authMiddleware, async (req, res) => {
 
 app.get('/api/friends/requests', authMiddleware, async (req, res) => {
   try {
-    const requests = await Friend.find({ receiverId: req.userId, status: 'pending' })
-      .populate('senderId', 'name profilePicture');
+    const requests = await Friend.find({ recipient: req.userId, status: 'pending' })
+      .populate('requester', 'name profilePicture');
     res.json(requests);
   } catch (err) {
     console.error('Get friend requests error:', err);
@@ -269,7 +269,7 @@ app.get('/api/friends/requests', authMiddleware, async (req, res) => {
 app.put('/api/friends/accept/:requestId', authMiddleware, async (req, res) => {
   try {
     const friendRequest = await Friend.findOneAndUpdate(
-      { _id: req.params.requestId, receiverId: req.userId },
+      { _id: req.params.requestId, recipient: req.userId },
       { status: 'accepted' },
       { new: true }
     );
@@ -289,7 +289,7 @@ app.delete('/api/friends/request/:requestId', authMiddleware, async (req, res) =
   try {
     const friendRequest = await Friend.findOneAndDelete({
       _id: req.params.requestId,
-      $or: [{ senderId: req.userId }, { receiverId: req.userId }],
+      $or: [{ requester: req.userId }, { recipient: req.userId }],
     });
 
     if (!friendRequest) {
@@ -306,12 +306,12 @@ app.delete('/api/friends/request/:requestId', authMiddleware, async (req, res) =
 app.get('/api/friends', authMiddleware, async (req, res) => {
   try {
     const friendships = await Friend.find({
-      $or: [{ senderId: req.userId }, { receiverId: req.userId }],
+      $or: [{ requester: req.userId }, { recipient: req.userId }],
       status: 'accepted',
     });
 
     const friendIds = friendships.map((f) =>
-      f.senderId.toString() === req.userId ? f.receiverId : f.senderId
+      f.requester.toString() === req.userId ? f.recipient : f.requester
     );
 
     const friends = await User.find({ _id: { $in: friendIds } }).select('-password');
@@ -326,23 +326,29 @@ app.get('/api/friends/status/:userId', authMiddleware, async (req, res) => {
   try {
     const friendship = await Friend.findOne({
       $or: [
-        { senderId: req.userId, receiverId: req.params.userId },
-        { senderId: req.params.userId, receiverId: req.userId },
+        { requester: req.userId, recipient: req.params.userId },
+        { requester: req.params.userId, recipient: req.userId },
       ],
     });
 
-    let status = 'not_friends';
+    let status = 'none';
+    let requestId = undefined;
+    let isRequester = false;
+    
     if (friendship) {
+      requestId = friendship._id.toString();
       if (friendship.status === 'accepted') {
-        status = 'friends';
-      } else if (friendship.senderId.toString() === req.userId) {
+        status = 'accepted';
+      } else if (friendship.requester.toString() === req.userId) {
         status = 'pending';
+        isRequester = true;
       } else {
-        status = 'requested';
+        status = 'pending';
+        isRequester = false;
       }
     }
 
-    res.json({ status });
+    res.json({ status, requestId, isRequester });
   } catch (err) {
     console.error('Get friend status error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -353,8 +359,8 @@ app.delete('/api/friends/:friendId', authMiddleware, async (req, res) => {
   try {
     await Friend.deleteOne({
       $or: [
-        { senderId: req.userId, receiverId: req.params.friendId },
-        { senderId: req.params.friendId, receiverId: req.userId },
+        { requester: req.userId, recipient: req.params.friendId },
+        { requester: req.params.friendId, recipient: req.userId },
       ],
     });
 
