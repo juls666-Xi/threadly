@@ -10,13 +10,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MessageSquare, Search, User, LogOut, Settings, Bell } from 'lucide-react';
+import { MessageSquare, Search, User, LogOut, Settings, Bell, Menu } from 'lucide-react';
 
 interface NavbarProps {
   onSearch?: (query: string) => void;
+  onMenuClick?: () => void;
 }
 
-export default function Navbar({ onSearch }: NavbarProps) {
+export default function Navbar({ onSearch, onMenuClick }: NavbarProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,13 +38,20 @@ export default function Navbar({ onSearch }: NavbarProps) {
     <nav className="bg-white border-b border-blue-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="bg-blue-600 p-2 rounded-lg">
-              <MessageSquare className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-blue-900 hidden sm:block">SocialNet</span>
-          </Link>
+          {/* Logo / Menu */}
+          <div className="flex items-center space-x-2">
+            {onMenuClick && (
+              <Button variant="ghost" size="icon" className="md:hidden" onClick={onMenuClick}>
+                <Menu className="h-5 w-5" />
+              </Button>
+            )}
+            <Link to="/" className="flex items-center space-x-2">
+              <div className="bg-blue-600 p-2 rounded-lg">
+                <MessageSquare className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-blue-900 hidden sm:block">SocialNet</span>
+            </Link>
+          </div>
 
           {/* Search */}
           <form onSubmit={handleSearch} className="flex-1 max-w-md mx-4">

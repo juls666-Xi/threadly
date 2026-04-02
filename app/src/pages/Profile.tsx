@@ -27,7 +27,6 @@ import {
   Clock,
   MessageCircle,
   Loader2,
-  Menu,
   Home,
   Users,
 } from 'lucide-react';
@@ -287,18 +286,10 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-blue-50">
-      <Navbar />
+      <Navbar onMenuClick={() => setSidebarOpen(true)} />
       <MobileSidebar />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Mobile menu trigger */}
-        <div className="md:hidden mb-4">
-          <Button variant="outline" onClick={() => setSidebarOpen(true)}>
-            <Menu className="mr-2 h-4 w-4" />
-            Menu
-          </Button>
-        </div>
-
         {/* Profile Header */}
         <Card className="mb-6">
           <CardContent className="p-6">
