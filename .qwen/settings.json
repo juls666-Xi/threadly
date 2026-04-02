@@ -20,7 +20,9 @@
       "Bash(eof)",
       "Bash(git *)",
       "Bash(grep *)",
-      "Bash(file *)"
+      "Bash(file *)",
+      "Bash(pkill *)",
+      "Bash(true)"
     ]
   },
   "$version": 3

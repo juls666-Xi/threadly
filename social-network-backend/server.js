@@ -19,6 +19,7 @@ const transformUser = (user) => {
   const userObj = user.toObject ? user.toObject() : user;
   return {
     ...userObj,
+    id: user._id.toString(),
     username: userObj.name,
   };
 };
@@ -530,13 +531,22 @@ app.get('/api/messages/inbox', authMiddleware, async (req, res) => {
     senders.forEach((s) => {
       const senderObj = s.toObject();
       senderMap[s._id.toString()] = {
-        ...senderObj,
+        id: s._id.toString(),
+        _id: s._id,
         username: senderObj.name,
+        email: senderObj.email || '',
+        profilePicture: senderObj.profilePicture || '',
+        bio: senderObj.bio || '',
+        school: senderObj.school || '',
+        interests: senderObj.interests || [],
+        isOnline: senderObj.isOnline || false,
+        lastActive: senderObj.lastActive,
+        createdAt: senderObj.createdAt,
       };
     });
 
     const conversations = messages.map((m) => ({
-      sender: senderMap[m._id.toString()],
+      friend: senderMap[m._id.toString()],
       lastMessage: m.lastMessage,
       unreadCount: m.unreadCount,
     }));
