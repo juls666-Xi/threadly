@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@/context/ThemeContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { User, Users, MessageCircle, Home, Loader2 } from 'lucide-react';
+import { User, Users, MessageCircle, Home, Loader2, Moon, Sun } from 'lucide-react';
 import { userAPI } from '@/services/api';
 import type { User as UserType } from '@/types';
 
 export default function LeftSidebar() {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -36,7 +38,7 @@ export default function LeftSidebar() {
   return (
     <div className="space-y-4">
       {/* Profile Card */}
-      <Card>
+      <Card className="bg-card border-border">
         <CardContent className="p-4">
           {isLoading ? (
             <div className="flex justify-center py-4">
@@ -44,7 +46,7 @@ export default function LeftSidebar() {
             </div>
           ) : (
             <div className="text-center">
-              <div 
+              <div
                 className="w-20 h-20 bg-blue-100 rounded-full mx-auto mb-3 flex items-center justify-center cursor-pointer"
                 onClick={() => navigate('/profile')}
               >
@@ -58,12 +60,12 @@ export default function LeftSidebar() {
                   <User className="h-10 w-10 text-blue-600" />
                 )}
               </div>
-              <h3 className="font-semibold text-lg text-blue-900">{currentUser?.username}</h3>
+              <h3 className="font-semibold text-lg text-foreground">{currentUser?.username}</h3>
               {currentUser?.school && (
-                <p className="text-sm text-gray-500">{currentUser.school}</p>
+                <p className="text-sm text-muted-foreground">{currentUser.school}</p>
               )}
               {currentUser?.bio && (
-                <p className="text-sm text-gray-600 mt-2 line-clamp-2">{currentUser.bio}</p>
+                <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{currentUser.bio}</p>
               )}
             </div>
           )}
@@ -71,7 +73,7 @@ export default function LeftSidebar() {
       </Card>
 
       {/* Navigation Menu */}
-      <Card>
+      <Card className="bg-card border-border">
         <CardContent className="p-2">
           <nav className="space-y-1">
             {menuItems.map((item) => (
@@ -85,6 +87,19 @@ export default function LeftSidebar() {
                 {item.label}
               </Button>
             ))}
+            <div className="border-t border-border my-2"></div>
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              onClick={toggleTheme}
+            >
+              {theme === 'dark' ? (
+                <Sun className="mr-3 h-5 w-5" />
+              ) : (
+                <Moon className="mr-3 h-5 w-5" />
+              )}
+              {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            </Button>
           </nav>
         </CardContent>
       </Card>
