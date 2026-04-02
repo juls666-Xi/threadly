@@ -216,30 +216,31 @@ export default function Profile() {
   const renderFriendButton = () => {
     if (isOwnProfile) return null;
 
-    switch (friendStatus.status) {
-      case 'accepted':
-        return (
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => navigate(`/messages/${userId}`)}>
-              <MessageCircle className="mr-2 h-4 w-4" />
-              Message
-            </Button>
-            <Button variant="outline" onClick={handleRemoveFriend}>
-              <UserCheck className="mr-2 h-4 w-4" />
-              Friends
-            </Button>
-          </div>
-        );
-      case 'pending':
-        if (friendStatus.isRequester) {
-          return (
+    return (
+      <div className="flex flex-col space-y-2">
+        <Button variant="outline" onClick={() => navigate(`/messages/${userId}`)}>
+          <MessageCircle className="mr-2 h-4 w-4" />
+          Message
+        </Button>
+        {friendStatus.status === 'accepted' && (
+          <Button variant="outline" onClick={handleRemoveFriend}>
+            <UserCheck className="mr-2 h-4 w-4" />
+            Friends
+          </Button>
+        )}
+        {friendStatus.status === 'none' && (
+          <Button onClick={handleSendFriendRequest}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add Friend
+          </Button>
+        )}
+        {friendStatus.status === 'pending' && (
+          friendStatus.isRequester ? (
             <Button variant="outline" onClick={handleRemoveFriend}>
               <Clock className="mr-2 h-4 w-4" />
               Request Sent
             </Button>
-          );
-        } else {
-          return (
+          ) : (
             <div className="flex space-x-2">
               <Button onClick={handleAcceptFriendRequest}>
                 <Check className="mr-2 h-4 w-4" />
@@ -250,16 +251,10 @@ export default function Profile() {
                 Decline
               </Button>
             </div>
-          );
-        }
-      default:
-        return (
-          <Button onClick={handleSendFriendRequest}>
-            <UserPlus className="mr-2 h-4 w-4" />
-            Add Friend
-          </Button>
-        );
-    }
+          )
+        )}
+      </div>
+    );
   };
 
   if (isLoading) {
