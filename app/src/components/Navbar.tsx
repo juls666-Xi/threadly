@@ -35,7 +35,7 @@ export default function Navbar({ onSearch, onMenuClick }: NavbarProps) {
   };
 
   return (
-    <nav className="bg-white border-b border-blue-100 sticky top-0 z-50">
+    <nav className="bg-background border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo / Menu */}
@@ -49,18 +49,18 @@ export default function Navbar({ onSearch, onMenuClick }: NavbarProps) {
               <div className="bg-blue-600 p-2 rounded-lg">
                 <MessageSquare className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-blue-900 hidden sm:block">SocialNet</span>
+              <span className="text-xl font-bold text-foreground hidden sm:block">SocialNet</span>
             </Link>
           </div>
 
           {/* Search */}
           <form onSubmit={handleSearch} className="flex-1 max-w-md mx-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search users..."
-                className="pl-10 w-full bg-blue-50 border-blue-100 focus:bg-white"
+                className="pl-10 w-full bg-muted border-border focus:bg-background"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -75,7 +75,7 @@ export default function Navbar({ onSearch, onMenuClick }: NavbarProps) {
               className="relative"
               onClick={() => navigate('/messages')}
             >
-              <Bell className="h-5 w-5 text-gray-600" />
+              <Bell className="h-5 w-5" />
             </Button>
 
             <DropdownMenu>
@@ -92,7 +92,7 @@ export default function Navbar({ onSearch, onMenuClick }: NavbarProps) {
                       <User className="h-4 w-4 text-blue-600" />
                     )}
                   </div>
-                  <span className="hidden sm:block font-medium text-sm">{user?.username}</span>
+                  <span className="hidden sm:block font-medium text-sm text-foreground">{user?.username}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">

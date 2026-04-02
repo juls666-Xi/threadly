@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import { socketService } from '@/services/socket';
 import Navbar from '@/components/Navbar';
 import LeftSidebar from '@/components/LeftSidebar';
@@ -13,10 +14,11 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Home as HomeIcon, User, Users, MessageCircle, MessageSquare } from 'lucide-react';
+import { Home as HomeIcon, User, Users, MessageCircle, MessageSquare, Moon, Sun } from 'lucide-react';
 
 export default function Home() {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -38,13 +40,13 @@ export default function Home() {
 
   const MobileSidebar = () => (
     <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-      <SheetContent side="left" className="w-64 bg-white p-0">
-        <SheetHeader className="border-b border-blue-100 p-4">
+      <SheetContent side="left" className="w-64 bg-background p-0">
+        <SheetHeader className="border-b border-border p-4">
           <SheetTitle className="flex items-center space-x-2">
             <div className="bg-blue-600 p-1.5 rounded-lg">
               <MessageSquare className="h-4 w-4 text-white" />
             </div>
-            <span className="text-lg font-bold text-blue-900">SocialNet</span>
+            <span className="text-lg font-bold text-foreground">SocialNet</span>
           </SheetTitle>
         </SheetHeader>
         <nav className="flex flex-col p-4 space-y-2">
@@ -92,6 +94,21 @@ export default function Home() {
             <MessageCircle className="mr-3 h-5 w-5" />
             Messages
           </Button>
+          <div className="border-t border-border my-2"></div>
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              toggleTheme();
+            }}
+          >
+            {theme === 'dark' ? (
+              <Sun className="mr-3 h-5 w-5" />
+            ) : (
+              <Moon className="mr-3 h-5 w-5" />
+            )}
+            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          </Button>
         </nav>
       </SheetContent>
     </Sheet>
@@ -99,14 +116,14 @@ export default function Home() {
 
   if (isLoading || !isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-blue-50">
+    <div className="min-h-screen bg-background">
       <Navbar onMenuClick={() => setSidebarOpen(true)} />
       <MobileSidebar />
 

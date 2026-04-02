@@ -31,7 +31,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
   };
 
   return (
-    <Card className="mb-6">
+    <Card className="mb-6 bg-card border-border">
       <CardContent className="p-4">
         <div className="flex space-x-4">
           <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -48,14 +48,14 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
           <div className="flex-1">
             <Textarea
               placeholder="What's on your mind?"
-              className="resize-none border-blue-100 focus:border-blue-300"
+              className="resize-none border-border focus:border-blue-300 bg-background"
               rows={3}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               maxLength={500}
             />
             <div className="flex justify-between items-center mt-3">
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 {content.length}/500
               </span>
               <Button

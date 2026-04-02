@@ -35,17 +35,17 @@ export default function Feed() {
   return (
     <div>
       <CreatePost onPostCreated={fetchPosts} />
-      
+
       {posts.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg border border-blue-100">
-          <p className="text-gray-500">No posts yet. Be the first to post!</p>
+        <div className="text-center py-12 bg-card rounded-lg border border-border">
+          <p className="text-muted-foreground">No posts yet. Be the first to post!</p>
         </div>
       ) : (
         <div>
           {posts.map((post) => (
-            <PostCard 
-              key={post._id} 
-              post={post} 
+            <PostCard
+              key={post._id}
+              post={post}
               onDelete={fetchPosts}
             />
           ))}

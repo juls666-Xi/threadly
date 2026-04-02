@@ -117,7 +117,7 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
   };
 
   return (
-    <Card className="mb-4">
+    <Card className="mb-4 bg-card border-border">
       <CardContent className="p-4">
         <div className="flex justify-between items-start">
           <div className="flex space-x-3">
@@ -137,12 +137,12 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
             </div>
             <div>
               <h4
-                className="font-semibold text-blue-900 cursor-pointer hover:underline"
+                className="font-semibold text-foreground cursor-pointer hover:underline"
                 onClick={handleUserClick}
               >
                 {postUser?.username || 'Unknown User'}
               </h4>
-              <div className="flex items-center text-xs text-gray-500">
+              <div className="flex items-center text-xs text-muted-foreground">
                 <Clock className="h-3 w-3 mr-1" />
                 {formatDate(localPost.createdAt)}
               </div>
@@ -170,16 +170,16 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
           )}
         </div>
 
-        <p className="mt-4 text-gray-800 whitespace-pre-wrap">{localPost.content}</p>
+        <p className="mt-4 text-foreground whitespace-pre-wrap">{localPost.content}</p>
 
         {/* Upvote and Comment Actions */}
-        <div className="mt-4 flex items-center space-x-4 border-t border-gray-100 pt-3">
+        <div className="mt-4 flex items-center space-x-4 border-t border-border pt-3">
           <Button
             variant="ghost"
             size="sm"
             onClick={handleUpvote}
             disabled={isUpvoting}
-            className={`flex items-center space-x-1 ${isUpvoted ? 'text-blue-600' : 'text-gray-600'}`}
+            className={`flex items-center space-x-1 ${isUpvoted ? 'text-blue-600' : 'text-muted-foreground'}`}
           >
             <ThumbsUp className={`h-4 w-4 ${isUpvoted ? 'fill-current' : ''}`} />
             <span>{localPost.upvoteCount || 0}</span>
@@ -189,7 +189,7 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
             variant="ghost"
             size="sm"
             onClick={() => setShowComments(!showComments)}
-            className="flex items-center space-x-1 text-gray-600"
+            className="flex items-center space-x-1 text-muted-foreground"
           >
             <MessageCircle className="h-4 w-4" />
             <span>{localPost.comments?.length || 0}</span>
@@ -198,7 +198,7 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
 
         {/* Comments Section */}
         {showComments && (
-          <div className="mt-4 border-t border-gray-100 pt-3">
+          <div className="mt-4 border-t border-border pt-3">
             {/* Add Comment */}
             <div className="flex space-x-2 mb-4">
               <Input
@@ -241,14 +241,14 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
                         )}
                       </div>
                       <div className="flex-1">
-                        <div className="bg-gray-50 rounded-lg px-3 py-2">
+                        <div className="bg-muted rounded-lg px-3 py-2">
                           <div className="flex items-center justify-between">
                             <span
-                              className="font-medium text-sm text-blue-900 cursor-pointer hover:underline"
+                              className="font-medium text-sm text-foreground cursor-pointer hover:underline"
                               onClick={() => handleCommentUserClick(comment)}
                             >
-                              {comment.userId && typeof comment.userId !== 'string' 
-                                ? comment.userId.username 
+                              {comment.userId && typeof comment.userId !== 'string'
+                                ? comment.userId.username
                                 : 'Unknown User'}
                             </span>
                             {isOwnComment && (
@@ -262,9 +262,9 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
                               </Button>
                             )}
                           </div>
-                          <p className="text-sm text-gray-800">{comment.content}</p>
+                          <p className="text-sm text-foreground">{comment.content}</p>
                         </div>
-                        <span className="text-xs text-gray-500 ml-2">
+                        <span className="text-xs text-muted-foreground ml-2">
                           {formatDate(comment.createdAt)}
                         </span>
                       </div>
