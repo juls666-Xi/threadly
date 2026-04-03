@@ -242,6 +242,27 @@ app.put('/api/users/profile', authMiddleware, async (req, res) => {
   }
 });
 
+// Profile picture upload endpoint
+app.put('/api/users/profile-picture', authMiddleware, upload.single('profilePicture'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const profilePictureUrl = `/uploads/${req.file.filename}`;
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { profilePicture: profilePictureUrl },
+      { new: true }
+    ).select('-password');
+    
+    res.json(transformUser(user));
+  } catch (err) {
+    console.error('Upload profile picture error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Post routes
 app.post('/api/posts', authMiddleware, async (req, res) => {
   try {
