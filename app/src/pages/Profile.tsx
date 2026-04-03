@@ -181,6 +181,13 @@ export default function Profile() {
     }
   };
 
+  const getImageUrl = (path: string) => {
+    if (!path) return '';
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    const API_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
+    return `${API_URL}${path}`;
+  };
+
   const handleSendFriendRequest = async () => {
     if (!userId) return;
     try {
@@ -364,7 +371,7 @@ export default function Profile() {
                     />
                   ) : profile.profilePicture ? (
                     <img
-                      src={profile.profilePicture}
+                      src={getImageUrl(profile.profilePicture)}
                       alt={profile.username}
                       className="w-24 h-24 rounded-full object-cover"
                     />

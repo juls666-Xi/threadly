@@ -84,7 +84,7 @@ export default function Navbar({ onSearch, onMenuClick }: NavbarProps) {
                   <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                     {user?.profilePicture ? (
                       <img
-                        src={user.profilePicture}
+                        src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${user.profilePicture}`}
                         alt={user.username}
                         className="w-8 h-8 rounded-full object-cover"
                       />

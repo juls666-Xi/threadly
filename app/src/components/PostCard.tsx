@@ -127,7 +127,7 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
             >
               {postUser?.profilePicture ? (
                 <img
-                  src={postUser.profilePicture}
+                  src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${postUser.profilePicture}`}
                   alt={postUser.username}
                   className="w-10 h-10 rounded-full object-cover"
                 />
@@ -232,7 +232,7 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
                       >
                         {comment.userId && typeof comment.userId !== 'string' && comment.userId.profilePicture ? (
                           <img
-                            src={comment.userId.profilePicture}
+                            src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${comment.userId.profilePicture}`}
                             alt={comment.userId.username}
                             className="w-8 h-8 rounded-full object-cover"
                           />
