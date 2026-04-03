@@ -37,7 +37,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
           <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
             {user?.profilePicture ? (
               <img
-                src={user.profilePicture}
+                src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${user.profilePicture}`}
                 alt={user.username}
                 className="w-10 h-10 rounded-full object-cover"
               />

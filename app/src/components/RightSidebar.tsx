@@ -80,7 +80,7 @@ export default function RightSidebar() {
                     <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                       {friend.profilePicture ? (
                         <img
-                          src={friend.profilePicture}
+                          src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${friend.profilePicture}`}
                           alt={friend.username}
                           className="w-10 h-10 rounded-full object-cover"
                         />
@@ -110,7 +110,7 @@ export default function RightSidebar() {
                     <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
                       {friend.profilePicture ? (
                         <img
-                          src={friend.profilePicture}
+                          src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${friend.profilePicture}`}
                           alt={friend.username}
                           className="w-10 h-10 rounded-full object-cover"
                         />

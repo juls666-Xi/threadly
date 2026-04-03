@@ -52,7 +52,7 @@ export default function LeftSidebar() {
               >
                 {currentUser?.profilePicture ? (
                   <img
-                    src={currentUser.profilePicture}
+                    src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${currentUser.profilePicture}`}
                     alt={currentUser.username}
                     className="w-20 h-20 rounded-full object-cover"
                   />

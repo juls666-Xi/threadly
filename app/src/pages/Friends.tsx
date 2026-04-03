@@ -165,7 +165,7 @@ export default function Friends() {
                             <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                               {friend.profilePicture ? (
                                 <img
-                                  src={friend.profilePicture}
+                                  src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${friend.profilePicture}`}
                                   alt={friend.username}
                                   className="w-12 h-12 rounded-full object-cover"
                                 />
@@ -226,14 +226,14 @@ export default function Friends() {
                         key={request._id} 
                         className="flex items-center justify-between p-4 border border-blue-100 rounded-lg"
                       >
-                        <div 
+                        <div
                           className="flex items-center space-x-3 cursor-pointer"
                           onClick={() => navigate(`/profile/${request.requester._id}`)}
                         >
                           <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                             {request.requester.profilePicture ? (
                               <img
-                                src={request.requester.profilePicture}
+                                src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${request.requester.profilePicture}`}
                                 alt={request.requester.username}
                                 className="w-12 h-12 rounded-full object-cover"
                               />
@@ -303,14 +303,14 @@ export default function Friends() {
                         key={user.id} 
                         className="flex items-center justify-between p-4 border border-blue-100 rounded-lg"
                       >
-                        <div 
+                        <div
                           className="flex items-center space-x-3 cursor-pointer"
                           onClick={() => navigate(`/profile/${user.id}`)}
                         >
                           <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                             {user.profilePicture ? (
                               <img
-                                src={user.profilePicture}
+                                src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${user.profilePicture}`}
                                 alt={user.username}
                                 className="w-12 h-12 rounded-full object-cover"
                               />
