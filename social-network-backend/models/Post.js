@@ -28,6 +28,12 @@ const postSchema = new mongoose.Schema({
     required: true,
     maxlength: 500
   },
+  image: {
+    url: String,
+    filename: String,
+    mimeType: String,
+    size: Number
+  },
   upvotes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'

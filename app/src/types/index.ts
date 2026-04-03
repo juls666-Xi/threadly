@@ -19,10 +19,18 @@ export interface Comment {
   createdAt: string;
 }
 
+export interface PostAttachment {
+  url: string;
+  filename: string;
+  mimeType: string;
+  size: number;
+}
+
 export interface Post {
   _id: string;
   userId: User | string;
   content: string;
+  image?: PostAttachment;
   upvotes: User[];
   upvoteCount: number;
   comments: Comment[];

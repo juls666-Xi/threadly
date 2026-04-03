@@ -264,10 +264,21 @@ app.put('/api/users/profile-picture', authMiddleware, upload.single('profilePict
 });
 
 // Post routes
-app.post('/api/posts', authMiddleware, async (req, res) => {
+app.post('/api/posts', authMiddleware, upload.single('image'), async (req, res) => {
   try {
     const { content } = req.body;
-    const post = new Post({ userId: req.userId, content });
+
+    let image = null;
+    if (req.file) {
+      image = {
+        url: `/uploads/${req.file.filename}`,
+        filename: req.file.originalname,
+        mimeType: req.file.mimetype,
+        size: req.file.size
+      };
+    }
+
+    const post = new Post({ userId: req.userId, content, image });
     await post.save();
     const populatedPost = await Post.findById(post._id)
       .populate('userId', 'name profilePicture')

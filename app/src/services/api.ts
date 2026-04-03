@@ -71,9 +71,22 @@ export const userAPI = {
 
 // Post API
 export const postAPI = {
-  createPost: async (content: string): Promise<Post> => {
-    const response = await api.post('/posts', { content });
-    return response.data;
+  createPost: async (content: string, file?: File): Promise<Post> => {
+    if (file) {
+      const formData = new FormData();
+      formData.append('content', content);
+      formData.append('image', file);
+
+      const response = await api.post('/posts', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } else {
+      const response = await api.post('/posts', { content });
+      return response.data;
+    }
   },
   
   getPosts: async (): Promise<Post[]> => {
