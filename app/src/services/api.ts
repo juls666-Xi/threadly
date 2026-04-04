@@ -9,9 +9,6 @@ if (!import.meta.env.VITE_API_BASE_URL) {
 
 const api = axios.create({
   baseURL: `${API_URL}/api`,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 // Add auth token to requests
@@ -62,11 +59,7 @@ export const userAPI = {
     const formData = new FormData();
     formData.append('avatar', file);
 
-    const response = await api.post('/users/upload-avatar', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await api.post('/users/upload-avatar', formData);
     return response.data;
   },
 
@@ -89,11 +82,7 @@ export const postAPI = {
       formData.append('content', content);
       formData.append('image', file);
 
-      const response = await api.post('/posts', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await api.post('/posts', formData);
       return response.data;
     } else {
       const response = await api.post('/posts', { content });
@@ -179,11 +168,7 @@ export const messageAPI = {
       formData.append('content', content);
       formData.append('attachment', file);
 
-      const response = await api.post('/messages', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await api.post('/messages', formData);
       return response.data;
     } else {
       const response = await api.post('/messages', { receiverId, content });
