@@ -246,11 +246,14 @@ app.put('/api/users/profile', authMiddleware, async (req, res) => {
 // Avatar upload endpoint — uploads to Cloudinary for persistent cloud storage
 app.post('/api/users/upload-avatar', authMiddleware, upload.single('avatar'), async (req, res) => {
   try {
+    console.log('[upload-avatar] File received:', req.file ? req.file.originalname : 'none');
+    console.log('[upload-avatar] userId:', req.userId);
+
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded. Please select an image.' });
     }
 
-    // Upload to Cloudinary
+    console.log('[upload-avatar] Uploading to Cloudinary...');
     const result = await cloudinary.uploader.upload(req.file.path, {
       folder: 'avatars',
       transformation: [
@@ -259,6 +262,7 @@ app.post('/api/users/upload-avatar', authMiddleware, upload.single('avatar'), as
         { fetch_format: 'auto' },
       ],
     });
+    console.log('[upload-avatar] Cloudinary result:', result.secure_url);
 
     // Delete the temporary local file
     fs.unlinkSync(req.file.path);
@@ -268,7 +272,7 @@ app.post('/api/users/upload-avatar', authMiddleware, upload.single('avatar'), as
     if (user?.profilePicture && user.profilePicture.includes('cloudinary.com')) {
       try {
         const parts = user.profilePicture.split('/');
-        const filename = parts[parts.length - 1]; // e.g. "abc123.jpg"
+        const filename = parts[parts.length - 1];
         const publicId = `avatars/${filename.split('.')[0]}`;
         await cloudinary.uploader.destroy(publicId);
       } catch (err) {
@@ -288,6 +292,8 @@ app.post('/api/users/upload-avatar', authMiddleware, upload.single('avatar'), as
       return res.status(404).json({ message: 'User not found' });
     }
 
+    console.log('[upload-avatar] Updated user:', updatedUser.profilePicture);
+
     const transformedUser = transformUser(updatedUser);
 
     // Emit socket event to notify other clients about avatar update
@@ -300,7 +306,6 @@ app.post('/api/users/upload-avatar', authMiddleware, upload.single('avatar'), as
     res.json({ message: 'Avatar uploaded successfully', user: transformedUser });
   } catch (err) {
     console.error('Upload avatar error:', err);
-    // Clean up temp file on error
     if (req.file?.path) {
       try { fs.unlinkSync(req.file.path); } catch (_) { /* ignore */ }
     }

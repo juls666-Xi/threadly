@@ -20,6 +20,20 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Log response errors for debugging
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (axios.isAxiosError(error)) {
+      console.error(`API Error [${error.config?.method?.toUpperCase()} ${error.config?.url}]:`, {
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Auth API
 export const authAPI = {
   register: async (name: string, password: string) => {

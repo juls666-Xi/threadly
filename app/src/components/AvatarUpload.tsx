@@ -60,15 +60,16 @@ export default function AvatarUpload({ user, onAvatarUpdate, size = 'md' }: Avat
 
     setIsUploading(true);
     try {
-      const { user } = await userAPI.uploadAvatar(selectedFile);
-      onAvatarUpdate(user);
+      console.log('[AvatarUpload] Uploading file:', selectedFile.name, selectedFile.size, 'bytes');
+      const result = await userAPI.uploadAvatar(selectedFile);
+      console.log('[AvatarUpload] Upload response:', result);
+      onAvatarUpdate(result.user);
       resetState();
       toast.success('Avatar updated successfully');
     } catch (error: unknown) {
       const message = extractErrorMessage(error);
       toast.error(message);
-      console.error('Avatar upload failed:', error);
-      // Clear file selection on error so user isn't stuck in a broken state
+      console.error('[AvatarUpload] Upload failed:', error);
       resetState();
     } finally {
       setIsUploading(false);
