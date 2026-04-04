@@ -22,7 +22,8 @@
       "Bash(grep *)",
       "Bash(file *)",
       "Bash(pkill *)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(mkdir *)"
     ]
   },
   "$version": 3
