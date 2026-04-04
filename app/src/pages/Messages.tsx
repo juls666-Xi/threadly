@@ -242,7 +242,7 @@ export default function Messages() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-blue-50">
+      <div className="min-h-screen bg-blue-50 dark:bg-neutral-900">
         <Navbar />
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
@@ -252,28 +252,28 @@ export default function Messages() {
   }
 
   return (
-    <div className="min-h-screen bg-blue-50">
+    <div className="min-h-screen bg-blue-50 dark:bg-neutral-900">
       <Navbar />
-      
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-140px)]">
           {/* Conversations List */}
           <Card className="md:col-span-1 overflow-hidden">
             <CardContent className="p-0">
-              <div className="p-4 border-b border-blue-100">
-                <h2 className="font-semibold text-lg text-blue-900">Messages</h2>
+              <div className="p-4 border-b border-blue-100 dark:border-neutral-700">
+                <h2 className="font-semibold text-lg text-blue-900 dark:text-gray-200">Messages</h2>
               </div>
               <ScrollArea className="h-[calc(100%-60px)]">
                 {allConversations.length === 0 ? (
-                  <div className="p-4 text-center text-gray-500">
+                  <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                     No friends yet. Find friends to start messaging!
                   </div>
                 ) : (
                   allConversations.map((conv) => (
                     <div
                       key={conv.friend.id}
-                      className={`p-4 border-b border-blue-50 cursor-pointer hover:bg-blue-50 transition-colors ${
-                        userId === conv.friend.id ? 'bg-blue-50' : ''
+                      className={`p-4 border-b border-blue-50 dark:border-neutral-700 cursor-pointer hover:bg-blue-50 dark:hover:bg-neutral-800 transition-colors ${
+                        userId === conv.friend.id ? 'bg-blue-50 dark:bg-neutral-800' : ''
                       }`}
                       onClick={() => navigate(`/messages/${conv.friend.id}`)}
                       role="button"
@@ -286,7 +286,7 @@ export default function Messages() {
                     >
                       <div className="flex items-center space-x-3">
                         <div className="relative">
-                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          <div className="w-10 h-10 bg-blue-100 dark:bg-neutral-700 rounded-full flex items-center justify-center">
                             {conv.friend.profilePicture ? (
                               <img
                                 src={conv.friend.profilePicture}
@@ -294,15 +294,15 @@ export default function Messages() {
                                 className="w-10 h-10 rounded-full object-cover"
                               />
                             ) : (
-                              <User className="h-5 w-5 text-blue-600" />
+                              <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                             )}
                           </div>
                           {conv.friend.isOnline && (
-                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white dark:border-neutral-700 rounded-full"></div>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className={`font-medium text-sm truncate ${userId === conv.friend.id ? 'text-black' : ''}`}>{conv.friend.username}</h4>
+                          <h4 className={`font-medium text-sm truncate ${userId === conv.friend.id ? 'text-black dark:text-gray-200' : ''}`}>{conv.friend.username}</h4>
                           {conv.lastMessage ? (
                             <p className="text-xs text-gray-500 truncate">
                               {typeof conv.lastMessage.senderId === 'string'
@@ -333,7 +333,7 @@ export default function Messages() {
             {selectedUser ? (
               <>
                 {/* Chat Header */}
-                <div className="p-4 border-b border-blue-100 flex items-center space-x-3">
+                <div className="p-4 border-b border-blue-100 dark:border-neutral-700 flex items-center space-x-3">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -343,7 +343,7 @@ export default function Messages() {
                     <ArrowLeft className="h-5 w-5" />
                   </Button>
                   <div className="relative">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-neutral-700 rounded-full flex items-center justify-center">
                       {selectedUser.profilePicture ? (
                         <img
                           src={selectedUser.profilePicture}
@@ -351,11 +351,11 @@ export default function Messages() {
                           className="w-10 h-10 rounded-full object-cover"
                         />
                       ) : (
-                        <User className="h-5 w-5 text-blue-600" />
+                        <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                       )}
                     </div>
                     {selectedUser.isOnline && (
-                      <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white dark:border-neutral-700 rounded-full"></div>
                     )}
                   </div>
                   <div>
@@ -369,7 +369,7 @@ export default function Messages() {
                 {/* Messages */}
                 <ScrollArea className="flex-1 p-4">
                   {messages.length === 0 ? (
-                    <div className="text-center text-gray-500 py-8">
+                    <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                       No messages yet. Start a conversation!
                     </div>
                   ) : (
@@ -378,15 +378,15 @@ export default function Messages() {
                         const isOwn = typeof message.senderId === 'string'
                           ? message.senderId === currentUser?.id
                           : message.senderId._id === currentUser?.id;
-                        
-                        const showDate = index === 0 || 
+
+                        const showDate = index === 0 ||
                           formatDate(message.createdAt) !== formatDate(messages[index - 1].createdAt);
 
                         return (
                           <div key={message._id}>
                             {showDate && (
                               <div className="text-center my-4">
-                                <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-neutral-700 px-3 py-1 rounded-full">
                                   {formatDate(message.createdAt)}
                                 </span>
                               </div>
@@ -396,7 +396,7 @@ export default function Messages() {
                                 className={`max-w-[70%] px-4 py-2 rounded-2xl ${
                                   isOwn
                                     ? 'bg-blue-600 text-white rounded-br-none'
-                                    : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                                    : 'bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-gray-200 rounded-bl-none'
                                 }`}
                               >
                                 {/* Attachment display */}
@@ -428,7 +428,7 @@ export default function Messages() {
                                           href={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${attachment.url}`}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className={`flex items-center space-x-2 p-2 rounded-lg ${isOwn ? 'bg-blue-700' : 'bg-gray-200'} hover:opacity-80`}
+                                          className={`flex items-center space-x-2 p-2 rounded-lg ${isOwn ? 'bg-blue-700' : 'bg-gray-200 dark:bg-neutral-600'} hover:opacity-80`}
                                         >
                                           <Paperclip className="h-4 w-4" />
                                           <span className="text-sm truncate">{attachment.filename}</span>
@@ -454,14 +454,14 @@ export default function Messages() {
                 </ScrollArea>
 
                 {/* Input Area */}
-                <div className="p-4 border-t border-blue-100">
+                <div className="p-4 border-t border-blue-100 dark:border-neutral-700">
                   {/* File preview */}
                   {selectedFile && (
-                    <div className="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200 flex items-center justify-between">
+                    <div className="mb-3 p-3 bg-blue-50 dark:bg-neutral-800 rounded-lg border border-blue-200 dark:border-neutral-600 flex items-center justify-between">
                       <div className="flex items-center space-x-3 min-w-0 flex-1">
                         <Paperclip className="h-5 w-5 text-blue-600 flex-shrink-0" />
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-gray-900 truncate">{selectedFile.name}</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{selectedFile.name}</p>
                           <p className="text-xs text-gray-500">{formatFileSize(selectedFile.size)}</p>
                         </div>
                       </div>
@@ -512,9 +512,9 @@ export default function Messages() {
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center text-gray-500">
+              <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400">
                 <div className="text-center">
-                  <MessageSquare className="h-12 w-12 mx-auto mb-4 text-blue-300" />
+                  <MessageSquare className="h-12 w-12 mx-auto mb-4 text-blue-300 dark:text-blue-500" />
                   <p>Select a conversation to start messaging</p>
                 </div>
               </div>

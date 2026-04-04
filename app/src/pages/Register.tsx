@@ -46,7 +46,7 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 dark:from-neutral-800 dark:to-neutral-900 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
@@ -54,7 +54,7 @@ export default function Register() {
               <MessageSquare className="h-8 w-8 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl text-blue-900">Create Account</CardTitle>
+          <CardTitle className="text-2xl text-blue-900 dark:text-gray-200">Create Account</CardTitle>
           <CardDescription>Join our community and connect with friends</CardDescription>
         </CardHeader>
         <CardContent>
@@ -115,9 +115,9 @@ export default function Register() {
               )}
             </Button>
           </form>
-          <p className="text-center mt-4 text-sm text-gray-600">
+          <p className="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
             Already have an account?{' '}
-            <Link to="/login" className="text-blue-600 hover:underline">
+            <Link to="/login" className="text-blue-600 dark:text-blue-400 hover:underline">
               Sign in
             </Link>
           </p>

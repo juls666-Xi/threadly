@@ -226,13 +226,13 @@ export default function Profile() {
 
   const MobileSidebar = () => (
     <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-      <SheetContent side="left" className="w-64 bg-white p-0">
-        <SheetHeader className="border-b border-blue-100 p-4">
+      <SheetContent side="left" className="w-64 bg-white dark:bg-neutral-900 p-0">
+        <SheetHeader className="border-b border-blue-100 dark:border-neutral-700 p-4">
           <SheetTitle className="flex items-center space-x-2">
             <div className="bg-blue-600 p-1.5 rounded-lg">
               <MessageCircle className="h-4 w-4 text-white" />
             </div>
-            <span className="text-lg font-bold text-blue-900">SocialNet</span>
+            <span className="text-lg font-bold text-blue-900 dark:text-gray-200">SocialNet</span>
           </SheetTitle>
         </SheetHeader>
         <nav className="flex flex-col p-4 space-y-2">
@@ -331,7 +331,7 @@ export default function Profile() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-blue-50">
+      <div className="min-h-screen bg-blue-50 dark:bg-neutral-900">
         <Navbar />
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
@@ -342,17 +342,17 @@ export default function Profile() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-blue-50">
+      <div className="min-h-screen bg-blue-50 dark:bg-neutral-900">
         <Navbar />
         <div className="text-center py-12">
-          <p className="text-gray-500">User not found</p>
+          <p className="text-gray-500 dark:text-gray-400">User not found</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-blue-50">
+    <div className="min-h-screen bg-blue-50 dark:bg-neutral-900">
       <Navbar onMenuClick={() => setSidebarOpen(true)} />
       <MobileSidebar />
 
@@ -362,7 +362,7 @@ export default function Profile() {
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
               <div className="relative">
-                <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
+                <div className="w-24 h-24 bg-blue-100 dark:bg-neutral-700 rounded-full flex items-center justify-center overflow-hidden">
                   {previewUrl ? (
                     <img
                       src={previewUrl}
@@ -376,7 +376,7 @@ export default function Profile() {
                       className="w-24 h-24 rounded-full object-cover"
                     />
                   ) : (
-                    <User className="h-12 w-12 text-blue-600" />
+                    <User className="h-12 w-12 text-blue-600 dark:text-blue-400" />
                   )}
                 </div>
                 {isOwnProfile && (
@@ -422,17 +422,17 @@ export default function Profile() {
               )}
               
               <div className="flex-1 text-center md:text-left">
-                <h1 className="text-2xl font-bold text-blue-900">{profile.username}</h1>
-                
+                <h1 className="text-2xl font-bold text-blue-900 dark:text-gray-100">{profile.username}</h1>
+
                 {profile.school && (
-                  <div className="flex items-center justify-center md:justify-start text-gray-600 mt-1">
+                  <div className="flex items-center justify-center md:justify-start text-gray-600 dark:text-gray-400 mt-1">
                     <MapPin className="h-4 w-4 mr-1" />
                     {profile.school}
                   </div>
                 )}
                 
                 {profile.bio && !isEditing && (
-                  <p className="text-gray-700 mt-3">{profile.bio}</p>
+                  <p className="text-gray-700 dark:text-gray-300 mt-3">{profile.bio}</p>
                 )}
 
                 {isEditing && (
@@ -515,8 +515,8 @@ export default function Profile() {
           
           <TabsContent value="posts">
             {posts.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-lg border border-blue-100">
-                <p className="text-gray-500">No posts yet</p>
+              <div className="text-center py-12 bg-white dark:bg-neutral-800 rounded-lg border border-blue-100 dark:border-neutral-700">
+                <p className="text-gray-500 dark:text-gray-400">No posts yet</p>
               </div>
             ) : (
               posts.map((post) => (

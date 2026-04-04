@@ -103,7 +103,7 @@ export default function Friends() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-blue-50">
+      <div className="min-h-screen bg-blue-50 dark:bg-neutral-900">
         <Navbar />
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
@@ -113,7 +113,7 @@ export default function Friends() {
   }
 
   return (
-    <div className="min-h-screen bg-blue-50">
+    <div className="min-h-screen bg-blue-50 dark:bg-neutral-900">
       <Navbar />
       
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -140,8 +140,8 @@ export default function Friends() {
               </CardHeader>
               <CardContent>
                 {friends.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <UserX className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <UserX className="h-12 w-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                     <p>You don't have any friends yet</p>
                     <Button 
                       variant="link" 
@@ -153,16 +153,16 @@ export default function Friends() {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {friends.map((friend) => (
-                      <div 
-                        key={friend.id} 
-                        className="flex items-center justify-between p-4 border border-blue-100 rounded-lg hover:bg-blue-50"
+                      <div
+                        key={friend.id}
+                        className="flex items-center justify-between p-4 border border-blue-100 dark:border-neutral-700 rounded-lg hover:bg-blue-50 dark:hover:bg-neutral-800"
                       >
-                        <div 
+                        <div
                           className="flex items-center space-x-3 cursor-pointer"
                           onClick={() => navigate(`/profile/${friend.id}`)}
                         >
                           <div className="relative">
-                            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <div className="w-12 h-12 bg-blue-100 dark:bg-neutral-700 rounded-full flex items-center justify-center">
                               {friend.profilePicture ? (
                                 <img
                                   src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${friend.profilePicture}`}
@@ -170,7 +170,7 @@ export default function Friends() {
                                   className="w-12 h-12 rounded-full object-cover"
                                 />
                               ) : (
-                                <User className="h-6 w-6 text-blue-600" />
+                                <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                               )}
                             </div>
                             {friend.isOnline && (
@@ -215,22 +215,22 @@ export default function Friends() {
               </CardHeader>
               <CardContent>
                 {requests.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <UserPlus className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <UserPlus className="h-12 w-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                     <p>No pending friend requests</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {requests.map((request) => (
-                      <div 
-                        key={request._id} 
-                        className="flex items-center justify-between p-4 border border-blue-100 rounded-lg"
+                      <div
+                        key={request._id}
+                        className="flex items-center justify-between p-4 border border-blue-100 dark:border-neutral-700 rounded-lg"
                       >
                         <div
                           className="flex items-center space-x-3 cursor-pointer"
                           onClick={() => navigate(`/profile/${request.requester._id}`)}
                         >
-                          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                          <div className="w-12 h-12 bg-blue-100 dark:bg-neutral-700 rounded-full flex items-center justify-center">
                             {request.requester.profilePicture ? (
                               <img
                                 src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${request.requester.profilePicture}`}
@@ -238,7 +238,7 @@ export default function Friends() {
                                 className="w-12 h-12 rounded-full object-cover"
                               />
                             ) : (
-                              <User className="h-6 w-6 text-blue-600" />
+                              <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                             )}
                           </div>
                           <div>
@@ -299,15 +299,15 @@ export default function Friends() {
                 {searchResults.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {searchResults.map((user) => (
-                      <div 
-                        key={user.id} 
-                        className="flex items-center justify-between p-4 border border-blue-100 rounded-lg"
+                      <div
+                        key={user.id}
+                        className="flex items-center justify-between p-4 border border-blue-100 dark:border-neutral-700 rounded-lg"
                       >
                         <div
                           className="flex items-center space-x-3 cursor-pointer"
                           onClick={() => navigate(`/profile/${user.id}`)}
                         >
-                          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                          <div className="w-12 h-12 bg-blue-100 dark:bg-neutral-700 rounded-full flex items-center justify-center">
                             {user.profilePicture ? (
                               <img
                                 src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${user.profilePicture}`}
@@ -315,7 +315,7 @@ export default function Friends() {
                                 className="w-12 h-12 rounded-full object-cover"
                               />
                             ) : (
-                              <User className="h-6 w-6 text-blue-600" />
+                              <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                             )}
                           </div>
                           <div>
@@ -336,8 +336,8 @@ export default function Friends() {
                     ))}
                   </div>
                 ) : searchQuery && !isSearching ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <Search className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <Search className="h-12 w-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                     <p>No users found</p>
                   </div>
                 ) : null}
