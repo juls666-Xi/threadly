@@ -15,17 +15,12 @@ const Post = require('./models/Post');
 const Message = require('./models/Message');
 const Friend = require('./models/Friend');
 const authMiddleware = require('./middleware/auth');
+const cloudinary = require('./config/cloudinary');
 
 // Multer configuration for general file uploads (posts, messages)
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Dedicated avatar upload directory
-const avatarDir = path.join(__dirname, 'uploads', 'avatars');
-if (!fs.existsSync(avatarDir)) {
-  fs.mkdirSync(avatarDir, { recursive: true });
 }
 
 const storage = multer.diskStorage({
@@ -36,37 +31,6 @@ const storage = multer.diskStorage({
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, uniqueSuffix + '-' + file.originalname);
   }
-});
-
-// Avatar-specific storage: stores in uploads/avatars with user-based filename
-const avatarStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, avatarDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname) || '.jpg';
-    // Use userId in filename for easy cleanup
-    cb(null, `avatar-${req.userId}${ext}`);
-  }
-});
-
-// Image-only filter for avatars
-const imageFileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif|webp/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = file.mimetype.startsWith('image/');
-
-  if (mimetype && extname) {
-    cb(null, true);
-  } else {
-    cb(new Error('Invalid file type. Only image files (jpeg, jpg, png, gif, webp) are allowed for avatars.'));
-  }
-};
-
-const uploadAvatar = multer({
-  storage: avatarStorage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit for avatars
-  fileFilter: imageFileFilter
 });
 
 const fileFilter = (req, file, cb) => {
@@ -87,21 +51,6 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: fileFilter
 });
-
-// Helper: delete old avatar file for a user
-function deleteOldAvatar(userId) {
-  try {
-    const files = fs.readdirSync(avatarDir);
-    const userAvatars = files.filter(f => f.startsWith(`avatar-${userId}`));
-    userAvatars.forEach(file => {
-      const filePath = path.join(avatarDir, file);
-      fs.unlinkSync(filePath);
-    });
-  } catch (err) {
-    // Log but don't fail the upload if old file deletion fails
-    console.error('Error deleting old avatar:', err.message);
-  }
-}
 
 // Helper function to transform user object for frontend compatibility
 const transformUser = (user) => {
@@ -294,29 +243,52 @@ app.put('/api/users/profile', authMiddleware, async (req, res) => {
   }
 });
 
-// Avatar upload endpoint (POST - replaces old profile picture)
-app.post('/api/users/upload-avatar', authMiddleware, uploadAvatar.single('avatar'), async (req, res) => {
+// Avatar upload endpoint — uploads to Cloudinary for persistent cloud storage
+app.post('/api/users/upload-avatar', authMiddleware, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded. Please select an image.' });
     }
 
-    // Delete old avatar file from disk
-    deleteOldAvatar(req.userId);
+    // Upload to Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: 'avatars',
+      transformation: [
+        { width: 400, height: 400, crop: 'fill', gravity: 'face' },
+        { quality: 'auto' },
+        { fetch_format: 'auto' },
+      ],
+    });
 
-    // Store only the URL path in MongoDB (persistent path)
-    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
-    const user = await User.findByIdAndUpdate(
+    // Delete the temporary local file
+    fs.unlinkSync(req.file.path);
+
+    // Delete old avatar from Cloudinary if we know the public_id
+    const user = await User.findById(req.userId);
+    if (user?.profilePicture && user.profilePicture.includes('cloudinary.com')) {
+      try {
+        const parts = user.profilePicture.split('/');
+        const filename = parts[parts.length - 1]; // e.g. "abc123.jpg"
+        const publicId = `avatars/${filename.split('.')[0]}`;
+        await cloudinary.uploader.destroy(publicId);
+      } catch (err) {
+        console.error('Error deleting old Cloudinary avatar:', err.message);
+      }
+    }
+
+    // Store the secure Cloudinary URL in MongoDB
+    const avatarUrl = result.secure_url;
+    const updatedUser = await User.findByIdAndUpdate(
       req.userId,
       { profilePicture: avatarUrl },
       { new: true }
     ).select('-password');
 
-    if (!user) {
+    if (!updatedUser) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const transformedUser = transformUser(user);
+    const transformedUser = transformUser(updatedUser);
 
     // Emit socket event to notify other clients about avatar update
     io.emit('avatar_updated', {
@@ -328,6 +300,10 @@ app.post('/api/users/upload-avatar', authMiddleware, uploadAvatar.single('avatar
     res.json({ message: 'Avatar uploaded successfully', user: transformedUser });
   } catch (err) {
     console.error('Upload avatar error:', err);
+    // Clean up temp file on error
+    if (req.file?.path) {
+      try { fs.unlinkSync(req.file.path); } catch (_) { /* ignore */ }
+    }
     res.status(500).json({ message: 'Failed to upload avatar' });
   }
 });
