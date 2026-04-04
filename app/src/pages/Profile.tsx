@@ -320,9 +320,9 @@ export default function Profile() {
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
               {/* Avatar Upload (only on own profile) */}
-              {isOwnProfile && currentUser ? (
+              {isOwnProfile && profile ? (
                 <AvatarUpload
-                  currentUser={currentUser}
+                  user={profile}
                   onAvatarUpdate={handleAvatarUpdate}
                   size="lg"
                 />

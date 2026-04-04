@@ -7,7 +7,7 @@ import type { User } from '@/types';
 import { toast } from 'sonner';
 
 interface AvatarUploadProps {
-  currentUser: User;
+  user: User;
   onAvatarUpdate: (updatedUser: User) => void;
   size?: 'sm' | 'md' | 'lg';
 }
@@ -23,13 +23,13 @@ function getAvatarUrl(path: string | undefined): string {
 const sizeMap = { sm: 'h-12 w-12', md: 'h-24 w-24', lg: 'h-32 w-32' };
 const iconSizeMap = { sm: 'h-3 w-3', md: 'h-4 w-4', lg: 'h-5 w-5' };
 
-export default function AvatarUpload({ currentUser, onAvatarUpdate, size = 'md' }: AvatarUploadProps) {
+export default function AvatarUpload({ user, onAvatarUpdate, size = 'md' }: AvatarUploadProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const currentAvatarUrl = getAvatarUrl(currentUser.profilePicture);
+  const currentAvatarUrl = getAvatarUrl(user.profilePicture);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -96,9 +96,9 @@ export default function AvatarUpload({ currentUser, onAvatarUpdate, size = 'md' 
     <div className="flex flex-col items-center gap-3">
       <div className="relative group">
         <Avatar className={`${sizeMap[size]} ring-2 ring-blue-200 dark:ring-blue-800 overflow-hidden`}>
-          <AvatarImage src={displayUrl} alt={currentUser.username} />
+          <AvatarImage src={displayUrl} alt={user.username} />
           <AvatarFallback className="bg-blue-100 dark:bg-neutral-700 text-blue-600 dark:text-blue-400 text-lg">
-            {currentUser.username?.charAt(0)?.toUpperCase() ?? 'U'}
+            {user.username?.charAt(0)?.toUpperCase() ?? 'U'}
           </AvatarFallback>
         </Avatar>
 
