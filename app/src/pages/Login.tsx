@@ -34,7 +34,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 dark:from-neutral-800 dark:to-neutral-900 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
@@ -42,7 +42,7 @@ export default function Login() {
               <MessageSquare className="h-8 w-8 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl text-blue-900">Welcome Back</CardTitle>
+          <CardTitle className="text-2xl text-blue-900 dark:text-gray-200">Welcome Back</CardTitle>
           <CardDescription>Sign in to connect with your friends</CardDescription>
         </CardHeader>
         <CardContent>
@@ -89,9 +89,9 @@ export default function Login() {
               )}
             </Button>
           </form>
-          <p className="text-center mt-4 text-sm text-gray-600">
+          <p className="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
             Don't have an account?{' '}
-            <Link to="/register" className="text-blue-600 hover:underline">
+            <Link to="/register" className="text-blue-600 dark:text-blue-400 hover:underline">
               Sign up
             </Link>
           </p>
