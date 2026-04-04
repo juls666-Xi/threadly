@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Camera, Loader2, X, Check } from 'lucide-react';
@@ -28,6 +29,7 @@ export default function AvatarUpload({ user, onAvatarUpdate, size = 'md' }: Avat
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const previewUrlRef = useRef<string | null>(null);
 
   const currentAvatarUrl = getAvatarUrl(user.profilePicture);
 
@@ -49,15 +51,9 @@ export default function AvatarUpload({ user, onAvatarUpdate, size = 'md' }: Avat
 
     setSelectedFile(file);
     const url = URL.createObjectURL(file);
+    previewUrlRef.current = url;
     setPreviewUrl(url);
   }, []);
-
-  // Cleanup object URL on unmount or file change
-  useState(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  });
 
   const handleUpload = async () => {
     if (!selectedFile) return;
@@ -66,29 +62,42 @@ export default function AvatarUpload({ user, onAvatarUpdate, size = 'md' }: Avat
     try {
       const { user } = await userAPI.uploadAvatar(selectedFile);
       onAvatarUpdate(user);
-      setSelectedFile(null);
-      setPreviewUrl(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      resetState();
       toast.success('Avatar updated successfully');
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to upload avatar';
+      const message = extractErrorMessage(error);
       toast.error(message);
       console.error('Avatar upload failed:', error);
+      // Clear file selection on error so user isn't stuck in a broken state
+      resetState();
     } finally {
       setIsUploading(false);
     }
   };
 
-  const handleCancel = useCallback(() => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
+  const resetState = useCallback(() => {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    previewUrlRef.current = null;
     setSelectedFile(null);
     setPreviewUrl(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  }, [previewUrl]);
+  }, []);
+
+  const handleCancel = useCallback(() => {
+    resetState();
+  }, [resetState]);
+
+  function extractErrorMessage(error: unknown): string {
+    if (axios.isAxiosError(error) && error.response?.data?.message) {
+      return error.response.data.message;
+    }
+    if (error instanceof Error) {
+      return error.message;
+    }
+    return 'Failed to upload avatar';
+  }
 
   const displayUrl = previewUrl || currentAvatarUrl;
 
