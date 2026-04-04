@@ -10,6 +10,7 @@ class SocketService {
   private stopTypingListeners: ((userId: string) => void)[] = [];
   private userOnlineListeners: ((userId: string) => void)[] = [];
   private userOfflineListeners: ((userId: string) => void)[] = [];
+  private avatarUpdatedListeners: ((data: { userId: string; avatar: string; username: string }) => void)[] = [];
 
   connect(userId: string) {
     if (this.socket) {
@@ -41,6 +42,10 @@ class SocketService {
 
     this.socket.on('userOffline', (userId: string) => {
       this.userOfflineListeners.forEach(listener => listener(userId));
+    });
+
+    this.socket.on('avatar_updated', (data: { userId: string; avatar: string; username: string }) => {
+      this.avatarUpdatedListeners.forEach(listener => listener(data));
     });
 
     this.socket.on('disconnect', () => {
@@ -110,6 +115,17 @@ class SocketService {
     return () => {
       this.userOfflineListeners = this.userOfflineListeners.filter(l => l !== callback);
     };
+  }
+
+  onAvatarUpdated(callback: (data: { userId: string; avatar: string; username: string }) => void) {
+    this.avatarUpdatedListeners.push(callback);
+    return () => {
+      this.avatarUpdatedListeners = this.avatarUpdatedListeners.filter(l => l !== callback);
+    };
+  }
+
+  offAvatarUpdated(callback: (data: { userId: string; avatar: string; username: string }) => void) {
+    this.avatarUpdatedListeners = this.avatarUpdatedListeners.filter(l => l !== callback);
   }
 }
 

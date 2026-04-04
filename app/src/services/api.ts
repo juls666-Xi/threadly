@@ -47,22 +47,34 @@ export const userAPI = {
     const response = await api.get('/users/me');
     return response.data;
   },
-  
+
   getUser: async (id: string): Promise<User> => {
     const response = await api.get(`/users/${id}`);
     return response.data;
   },
-  
+
   updateProfile: async (data: Partial<User>): Promise<User> => {
     const response = await api.put('/users/profile', data);
     return response.data;
   },
-  
+
+  uploadAvatar: async (file: File): Promise<{ message: string; user: User }> => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    const response = await api.post('/users/upload-avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
   searchUsers: async (query: string): Promise<User[]> => {
     const response = await api.get(`/users/search/${query}`);
     return response.data;
   },
-  
+
   getAllUsers: async (): Promise<User[]> => {
     const response = await api.get('/users');
     return response.data;

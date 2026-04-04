@@ -1,7 +1,8 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { userAPI, postAPI, friendAPI } from '@/services/api';
+import { socketService } from '@/services/socket';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -29,10 +30,10 @@ import {
   Loader2,
   Home,
   Users,
-  Camera,
 } from 'lucide-react';
 import PostCard from '@/components/PostCard';
 import Navbar from '@/components/Navbar';
+import AvatarUpload from '@/components/AvatarUpload';
 import type { User as UserType, Post, FriendStatus } from '@/types';
 
 export default function Profile() {
@@ -52,10 +53,6 @@ export default function Profile() {
     interests: [] as string[],
   });
   const [newInterest, setNewInterest] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isOwnProfile = !id || id === currentUser?.id;
   const userId = id || currentUser?.id;
@@ -94,13 +91,33 @@ export default function Profile() {
     fetchProfile();
   }, [userId, isOwnProfile, currentUser?.id]);
 
+  // Listen for avatar updates from other users via socket
   useEffect(() => {
-    return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
+    const handleAvatarUpdated = (data: { userId: string; avatar: string }) => {
+      if (data.userId === userId && profile) {
+        setProfile({ ...profile, profilePicture: data.avatar });
       }
     };
-  }, [previewUrl]);
+
+    socketService.onAvatarUpdated(handleAvatarUpdated);
+
+    return () => {
+      socketService.offAvatarUpdated(handleAvatarUpdated);
+    };
+  }, [userId, profile]);
+
+  const handleAvatarUpdate = (updatedUser: UserType) => {
+    setProfile(updatedUser);
+    // Also update the AuthContext if this is the current user
+    if (isOwnProfile) {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        parsed.profilePicture = updatedUser.profilePicture;
+        localStorage.setItem('user', JSON.stringify(parsed));
+      }
+    }
+  };
 
   const handleSaveProfile = async () => {
     try {
@@ -127,65 +144,6 @@ export default function Profile() {
       ...editData,
       interests: editData.interests.filter(i => i !== interest),
     });
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
-    }
-  };
-
-  const handleUploadPicture = async () => {
-    if (!selectedFile) return;
-    
-    setIsUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append('profilePicture', selectedFile);
-      
-      const API_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
-      const response = await fetch(`${API_URL}/api/users/profile-picture`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to upload profile picture');
-      }
-      
-      const updatedProfile = await response.json();
-      setProfile(updatedProfile);
-      setSelectedFile(null);
-      setPreviewUrl(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    } catch (error) {
-      console.error('Failed to upload profile picture:', error);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleCancelUpload = () => {
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const getImageUrl = (path: string) => {
-    if (!path) return '';
-    if (path.startsWith('http://') || path.startsWith('https://')) return path;
-    const API_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
-    return `${API_URL}${path}`;
   };
 
   const handleSendFriendRequest = async () => {
@@ -361,17 +319,20 @@ export default function Profile() {
         <Card className="mb-6">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
-              <div className="relative">
+              {/* Avatar Upload (only on own profile) */}
+              {isOwnProfile && currentUser ? (
+                <AvatarUpload
+                  currentUser={currentUser}
+                  onAvatarUpdate={handleAvatarUpdate}
+                  size="lg"
+                />
+              ) : (
                 <div className="w-24 h-24 bg-blue-100 dark:bg-neutral-700 rounded-full flex items-center justify-center overflow-hidden">
-                  {previewUrl ? (
+                  {profile.profilePicture ? (
                     <img
-                      src={previewUrl}
-                      alt={profile.username}
-                      className="w-24 h-24 rounded-full object-cover"
-                    />
-                  ) : profile.profilePicture ? (
-                    <img
-                      src={getImageUrl(profile.profilePicture)}
+                      src={profile.profilePicture.startsWith('http')
+                        ? profile.profilePicture
+                        : `${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000'}${profile.profilePicture}`}
                       alt={profile.username}
                       className="w-24 h-24 rounded-full object-cover"
                     />
@@ -379,48 +340,8 @@ export default function Profile() {
                     <User className="h-12 w-12 text-blue-600 dark:text-blue-400" />
                   )}
                 </div>
-                {isOwnProfile && (
-                  <div className="absolute -bottom-1 -right-1 flex items-center space-x-1">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                      id="profile-picture-upload"
-                    />
-                    <label
-                      htmlFor="profile-picture-upload"
-                      className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-1.5 cursor-pointer shadow-md transition-colors"
-                    >
-                      <Camera className="h-4 w-4" />
-                    </label>
-                  </div>
-                )}
-              </div>
-
-              {selectedFile && isOwnProfile && (
-                <div className="flex space-x-2">
-                  <Button onClick={handleUploadPicture} disabled={isUploading} size="sm">
-                    {isUploading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Uploading...
-                      </>
-                    ) : (
-                      <>
-                        <Check className="mr-2 h-4 w-4" />
-                        Save Picture
-                      </>
-                    )}
-                  </Button>
-                  <Button variant="outline" onClick={handleCancelUpload} size="sm">
-                    <X className="mr-2 h-4 w-4" />
-                    Cancel
-                  </Button>
-                </div>
               )}
-              
+
               <div className="flex-1 text-center md:text-left">
                 <h1 className="text-2xl font-bold text-blue-900 dark:text-gray-100">{profile.username}</h1>
 

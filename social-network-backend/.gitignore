@@ -42,5 +42,6 @@ Thumbs.db
 data/
 mongodb/
 
-# Uploaded files (will be lost on redeploy)
-uploads/
+# Uploaded files (will be lost on redeploy; use Cloudinary/S3 in production)
+uploads/*
+!uploads/avatars/.gitkeep
