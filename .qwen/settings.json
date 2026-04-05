@@ -23,7 +23,9 @@
       "Bash(file *)",
       "Bash(pkill *)",
       "Bash(true)",
-      "Bash(mkdir *)"
+      "Bash(mkdir *)",
+      "WebSearch",
+      "WebFetch(dev.to)"
     ]
   },
   "$version": 3
