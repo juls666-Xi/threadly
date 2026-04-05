@@ -69,6 +69,11 @@ export const userAPI = {
     return response.data;
   },
 
+  updateAvatarUrl: async (avatarUrl: string): Promise<{ message: string; user: User }> => {
+    const response = await api.put('/users/avatar-url', { avatarUrl });
+    return response.data;
+  },
+
   uploadAvatar: async (file: File): Promise<{ message: string; user: User }> => {
     const formData = new FormData();
     formData.append('avatar', file);
