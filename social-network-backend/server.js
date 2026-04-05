@@ -243,48 +243,6 @@ app.put('/api/users/profile', authMiddleware, async (req, res) => {
   }
 });
 
-// Update avatar URL endpoint - accepts avatar URL in request body
-app.put('/api/users/avatar-url', authMiddleware, async (req, res) => {
-  try {
-    const { avatarUrl } = req.body;
-
-    if (!avatarUrl) {
-      return res.status(400).json({ message: 'Avatar URL is required' });
-    }
-
-    // Validate URL format
-    try {
-      new URL(avatarUrl);
-    } catch (urlError) {
-      return res.status(400).json({ message: 'Invalid URL format' });
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      req.userId,
-      { profilePicture: avatarUrl },
-      { new: true }
-    ).select('-password');
-
-    if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    const transformedUser = transformUser(updatedUser);
-
-    // Emit socket event to notify other clients about avatar update
-    io.emit('avatar_updated', {
-      userId: req.userId,
-      avatar: avatarUrl,
-      username: transformedUser.username,
-    });
-
-    res.json({ message: 'Avatar updated successfully', user: transformedUser });
-  } catch (err) {
-    console.error('Update avatar URL error:', err);
-    res.status(500).json({ message: 'Failed to update avatar' });
-  }
-});
-
 // Avatar upload endpoint — uploads to Cloudinary for persistent cloud storage
 app.post('/api/users/upload-avatar', authMiddleware, upload.single('avatar'), async (req, res) => {
   try {
