@@ -1,13 +1,20 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import { messageAPI, userAPI, friendAPI } from '@/services/api';
 import { socketService } from '@/services/socket';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { User, Send, ArrowLeft, Loader2, MessageSquare, Paperclip, X } from 'lucide-react';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import { User, Send, ArrowLeft, Loader2, MessageSquare, Paperclip, X, Home, Users, MessageCircle, Sun, Moon } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import type { Message, User as UserType, Conversation } from '@/types';
 
@@ -20,8 +27,10 @@ interface ExtendedConversation extends Conversation {
 export default function Messages() {
   const { userId } = useParams<{ userId?: string }>();
   const { user: currentUser } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [conversations, setConversations] = useState<ExtendedConversation[]>([]);
   const [friends, setFriends] = useState<UserType[]>([]);
@@ -240,10 +249,87 @@ export default function Messages() {
 
   const allConversations = getAllConversations();
 
+  const MobileSidebar = () => (
+    <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+      <SheetContent side="left" className="w-64 bg-white dark:bg-neutral-900 p-0">
+        <SheetHeader className="border-b border-blue-100 dark:border-neutral-700 p-4">
+          <SheetTitle className="flex items-center space-x-2">
+            <div className="bg-blue-600 p-1.5 rounded-lg">
+              <MessageSquare className="h-4 w-4 text-white" />
+            </div>
+            <span className="text-lg font-bold text-blue-900 dark:text-gray-200">SocialNet</span>
+          </SheetTitle>
+        </SheetHeader>
+        <nav className="flex flex-col p-4 space-y-2">
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              navigate('/');
+              setSidebarOpen(false);
+            }}
+          >
+            <Home className="mr-3 h-5 w-5" />
+            Home
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              navigate('/profile');
+              setSidebarOpen(false);
+            }}
+          >
+            <User className="mr-3 h-5 w-5" />
+            Profile
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              navigate('/friends');
+              setSidebarOpen(false);
+            }}
+          >
+            <Users className="mr-3 h-5 w-5" />
+            Friends
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              navigate('/messages');
+              setSidebarOpen(false);
+            }}
+          >
+            <MessageCircle className="mr-3 h-5 w-5" />
+            Messages
+          </Button>
+          <div className="border-t border-blue-100 dark:border-neutral-700 my-2"></div>
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              toggleTheme();
+              setSidebarOpen(false);
+            }}
+          >
+            {theme === 'dark' ? (
+              <Sun className="mr-3 h-5 w-5" />
+            ) : (
+              <Moon className="mr-3 h-5 w-5" />
+            )}
+            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          </Button>
+        </nav>
+      </SheetContent>
+    </Sheet>
+  );
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-blue-50 dark:bg-neutral-900">
-        <Navbar />
+        <Navbar onMenuClick={() => setSidebarOpen(true)} />
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
         </div>
@@ -253,7 +339,8 @@ export default function Messages() {
 
   return (
     <div className="min-h-screen bg-blue-50 dark:bg-neutral-900">
-      <Navbar />
+      <Navbar onMenuClick={() => setSidebarOpen(true)} />
+      <MobileSidebar />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-140px)]">
