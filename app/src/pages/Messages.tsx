@@ -416,11 +416,11 @@ export default function Messages() {
           </Card>
 
           {/* Chat Area */}
-          <Card className="md:col-span-2 flex flex-col overflow-hidden">
+          <Card className="md:col-span-2 flex flex-col overflow-hidden" style={{ minHeight: 0 }}>
             {selectedUser ? (
               <>
                 {/* Chat Header */}
-                <div className="p-4 border-b border-blue-100 dark:border-neutral-700 flex items-center space-x-3">
+                <div className="p-4 border-b border-blue-100 dark:border-neutral-700 flex items-center space-x-3 flex-shrink-0">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -454,7 +454,8 @@ export default function Messages() {
                 </div>
 
                 {/* Messages */}
-                <ScrollArea className="flex-1 p-4">
+                <ScrollArea className="flex-1 p-4" style={{ minHeight: 0, maxHeight: 'none' }}>
+                  <div style={{ paddingBottom: '1px' }}>
                   {messages.length === 0 ? (
                     <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                       No messages yet. Start a conversation!
@@ -540,10 +541,11 @@ export default function Messages() {
                       <div ref={messagesEndRef} />
                     </div>
                   )}
+                  </div>
                 </ScrollArea>
 
                 {/* Input Area */}
-                <div className="p-4 border-t border-blue-100 dark:border-neutral-700">
+                <div className="p-4 border-t border-blue-100 dark:border-neutral-700 flex-shrink-0">
                   {/* File preview */}
                   {selectedFile && (
                     <div className="mb-3 p-3 bg-blue-50 dark:bg-neutral-800 rounded-lg border border-blue-200 dark:border-neutral-600 flex items-center justify-between">
