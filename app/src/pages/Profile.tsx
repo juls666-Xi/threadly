@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import { userAPI, postAPI, friendAPI } from '@/services/api';
 import { socketService } from '@/services/socket';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,8 @@ import {
   Loader2,
   Home,
   Users,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import PostCard from '@/components/PostCard';
 import Navbar from '@/components/Navbar';
@@ -39,6 +42,7 @@ import type { User as UserType, Post, FriendStatus } from '@/types';
 export default function Profile() {
   const { id } = useParams<{ id?: string }>();
   const { user: currentUser } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const [profile, setProfile] = useState<UserType | null>(null);
@@ -237,6 +241,21 @@ export default function Profile() {
           >
             <MessageCircle className="mr-3 h-5 w-5" />
             Messages
+          </Button>
+          <div className="border-t border-blue-100 dark:border-neutral-700 my-2"></div>
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              toggleTheme();
+            }}
+          >
+            {theme === 'dark' ? (
+              <Sun className="mr-3 h-5 w-5" />
+            ) : (
+              <Moon className="mr-3 h-5 w-5" />
+            )}
+            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
           </Button>
         </nav>
       </SheetContent>
