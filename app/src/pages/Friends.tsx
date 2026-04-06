@@ -1,26 +1,40 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@/context/ThemeContext';
 import { friendAPI, userAPI } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  User, 
-  UserPlus, 
-  UserCheck, 
-  UserX, 
-  Search, 
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import {
+  User,
+  UserPlus,
+  UserCheck,
+  UserX,
+  Search,
   MessageCircle,
   Check,
   X,
-  Loader2
+  Loader2,
+  Home,
+  Users,
+  MessageSquare,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import type { User as UserType, FriendRequest } from '@/types';
 
 export default function Friends() {
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   const [friends, setFriends] = useState<UserType[]>([]);
   const [requests, setRequests] = useState<FriendRequest[]>([]);
@@ -101,10 +115,86 @@ export default function Friends() {
     }
   };
 
+  const MobileSidebar = () => (
+    <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+      <SheetContent side="left" className="w-64 bg-white dark:bg-neutral-900 p-0">
+        <SheetHeader className="border-b border-blue-100 dark:border-neutral-700 p-4">
+          <SheetTitle className="flex items-center space-x-2">
+            <div className="bg-blue-600 p-1.5 rounded-lg">
+              <MessageSquare className="h-4 w-4 text-white" />
+            </div>
+            <span className="text-lg font-bold text-blue-900 dark:text-gray-200">SocialNet</span>
+          </SheetTitle>
+        </SheetHeader>
+        <nav className="flex flex-col p-4 space-y-2">
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              navigate('/');
+              setSidebarOpen(false);
+            }}
+          >
+            <Home className="mr-3 h-5 w-5" />
+            Home
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              navigate('/profile');
+              setSidebarOpen(false);
+            }}
+          >
+            <User className="mr-3 h-5 w-5" />
+            Profile
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              navigate('/friends');
+              setSidebarOpen(false);
+            }}
+          >
+            <Users className="mr-3 h-5 w-5" />
+            Friends
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              navigate('/messages');
+              setSidebarOpen(false);
+            }}
+          >
+            <MessageCircle className="mr-3 h-5 w-5" />
+            Messages
+          </Button>
+          <div className="border-t border-blue-100 dark:border-neutral-700 my-2"></div>
+          <Button
+            variant="ghost"
+            className="justify-start w-full"
+            onClick={() => {
+              toggleTheme();
+            }}
+          >
+            {theme === 'dark' ? (
+              <Sun className="mr-3 h-5 w-5" />
+            ) : (
+              <Moon className="mr-3 h-5 w-5" />
+            )}
+            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          </Button>
+        </nav>
+      </SheetContent>
+    </Sheet>
+  );
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-blue-50 dark:bg-neutral-900">
-        <Navbar />
+        <Navbar onMenuClick={() => setSidebarOpen(true)} />
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
         </div>
@@ -114,7 +204,8 @@ export default function Friends() {
 
   return (
     <div className="min-h-screen bg-blue-50 dark:bg-neutral-900">
-      <Navbar />
+      <Navbar onMenuClick={() => setSidebarOpen(true)} />
+      <MobileSidebar />
       
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Tabs defaultValue="friends">
