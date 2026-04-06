@@ -489,30 +489,32 @@ export default function Messages() {
                                 {/* Attachment display */}
                                 {message.attachment && (() => {
                                   const attachment = message.attachment;
+                                  const getUrl = (url: string) => url.startsWith('http') ? url : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${url}`;
+                                  const attachmentUrl = getUrl(attachment.url);
                                   return (
                                     <div className="mb-2">
                                       {attachment.mimeType.startsWith('image/') ? (
                                         <img
-                                          src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${attachment.url}`}
+                                          src={attachmentUrl}
                                           alt={attachment.filename}
                                           className="max-w-full rounded-lg cursor-pointer hover:opacity-90"
-                                          onClick={() => window.open(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${attachment.url}`, '_blank')}
+                                          onClick={() => window.open(attachmentUrl, '_blank')}
                                         />
                                       ) : attachment.mimeType.startsWith('video/') ? (
                                         <video
-                                          src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${attachment.url}`}
+                                          src={attachmentUrl}
                                           controls
                                           className="max-w-full rounded-lg"
                                         />
                                       ) : attachment.mimeType.startsWith('audio/') ? (
                                         <audio
-                                          src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${attachment.url}`}
+                                          src={attachmentUrl}
                                           controls
                                           className="w-full"
                                         />
                                       ) : (
                                         <a
-                                          href={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${attachment.url}`}
+                                          href={attachmentUrl}
                                           target="_blank"
                                           rel="noopener noreferrer"
                                           className={`flex items-center space-x-2 p-2 rounded-lg ${isOwn ? 'bg-blue-700' : 'bg-gray-200 dark:bg-neutral-600'} hover:opacity-80`}

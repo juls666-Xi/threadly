@@ -176,10 +176,10 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
         {localPost.image && (
           <div className="mt-4">
             <img
-              src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${localPost.image.url}`}
+              src={localPost.image.url.startsWith('http') ? localPost.image.url : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${localPost.image.url}`}
               alt={localPost.image.filename}
               className="max-h-96 w-auto rounded-lg object-contain border border-border cursor-pointer hover:opacity-95"
-              onClick={() => window.open(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${localPost.image!.url}`, '_blank')}
+              onClick={() => window.open(localPost.image!.url.startsWith('http') ? localPost.image!.url : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${localPost.image!.url}`, '_blank')}
             />
           </div>
         )}

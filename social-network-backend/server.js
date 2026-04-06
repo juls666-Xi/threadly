@@ -341,8 +341,21 @@ app.post('/api/posts', authMiddleware, upload.single('image'), async (req, res) 
 
     let image = null;
     if (req.file) {
+      // Upload to Cloudinary in the 'posts' folder
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'posts',
+        resource_type: 'auto',
+        transformation: [
+          { quality: 'auto' },
+          { fetch_format: 'auto' },
+        ],
+      });
+
+      // Delete the temporary local file
+      fs.unlinkSync(req.file.path);
+
       image = {
-        url: `/uploads/${req.file.filename}`,
+        url: result.secure_url,
         filename: req.file.originalname,
         mimeType: req.file.mimetype,
         size: req.file.size
@@ -360,6 +373,9 @@ app.post('/api/posts', authMiddleware, upload.single('image'), async (req, res) 
     res.status(201).json(transformedPost);
   } catch (err) {
     console.error('Create post error:', err);
+    if (req.file?.path) {
+      try { fs.unlinkSync(req.file.path); } catch (_) { /* ignore */ }
+    }
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -706,20 +722,33 @@ app.delete('/api/friends/:friendId', authMiddleware, async (req, res) => {
 app.post('/api/messages', authMiddleware, upload.single('attachment'), async (req, res) => {
   try {
     const { receiverId, content } = req.body;
-    
+
     let attachment = null;
     if (req.file) {
+      // Upload to Cloudinary in the 'messages' folder
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'messages',
+        resource_type: 'auto',
+        transformation: [
+          { quality: 'auto' },
+          { fetch_format: 'auto' },
+        ],
+      });
+
+      // Delete the temporary local file
+      fs.unlinkSync(req.file.path);
+
       attachment = {
-        url: `/uploads/${req.file.filename}`,
+        url: result.secure_url,
         filename: req.file.originalname,
         mimeType: req.file.mimetype,
         size: req.file.size
       };
     }
 
-    const message = new Message({ 
-      senderId: req.userId, 
-      receiverId, 
+    const message = new Message({
+      senderId: req.userId,
+      receiverId,
       content,
       attachment
     });
@@ -742,6 +771,9 @@ app.post('/api/messages', authMiddleware, upload.single('attachment'), async (re
     res.status(201).json(transformedMessage);
   } catch (err) {
     console.error('Send message error:', err);
+    if (req.file?.path) {
+      try { fs.unlinkSync(req.file.path); } catch (_) { /* ignore */ }
+    }
     res.status(500).json({ message: 'Server error' });
   }
 });
