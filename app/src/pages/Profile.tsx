@@ -41,7 +41,7 @@ import type { User as UserType, Post, FriendStatus } from '@/types';
 
 export default function Profile() {
   const { id } = useParams<{ id?: string }>();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, updateUser } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
@@ -114,12 +114,7 @@ export default function Profile() {
     setProfile(updatedUser);
     // Also update the AuthContext if this is the current user
     if (isOwnProfile) {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        const parsed = JSON.parse(storedUser);
-        parsed.profilePicture = updatedUser.profilePicture;
-        localStorage.setItem('user', JSON.stringify(parsed));
-      }
+      updateUser(updatedUser);
     }
   };
 
