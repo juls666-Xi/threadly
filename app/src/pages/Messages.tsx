@@ -15,6 +15,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { User, Send, ArrowLeft, Loader2, MessageSquare, Paperclip, X, Home, Users, MessageCircle, Sun, Moon } from 'lucide-react';
+import { getImageUrl } from '@/utils/imageUrl';
 import Navbar from '@/components/Navbar';
 import type { Message, User as UserType, Conversation } from '@/types';
 
@@ -410,7 +411,7 @@ export default function Messages() {
                           <div className="w-10 h-10 bg-blue-100 dark:bg-neutral-700 rounded-full flex items-center justify-center">
                             {conv.friend.profilePicture ? (
                               <img
-                                src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${conv.friend.profilePicture}`}
+                                src={getImageUrl(conv.friend.profilePicture)}
                                 alt={conv.friend.username}
                                 className="w-10 h-10 rounded-full object-cover"
                               />
@@ -467,7 +468,7 @@ export default function Messages() {
                     <div className="w-10 h-10 bg-blue-100 dark:bg-neutral-700 rounded-full flex items-center justify-center">
                       {selectedUser.profilePicture ? (
                         <img
-                          src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${selectedUser.profilePicture}`}
+                          src={getImageUrl(selectedUser.profilePicture)}
                           alt={selectedUser.username}
                           className="w-10 h-10 rounded-full object-cover"
                         />

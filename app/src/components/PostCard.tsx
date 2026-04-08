@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { User, MoreHorizontal, Trash2, Clock, ThumbsUp, MessageCircle, Send } from 'lucide-react';
+import { getImageUrl } from '@/utils/imageUrl';
 import { postAPI } from '@/services/api';
 import type { Post, Comment } from '@/types';
 
@@ -127,7 +128,7 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
             >
               {postUser?.profilePicture ? (
                 <img
-                  src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${postUser.profilePicture}`}
+                  src={getImageUrl(postUser.profilePicture)}
                   alt={postUser.username}
                   className="w-10 h-10 rounded-full object-cover"
                 />
@@ -244,7 +245,7 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
                       >
                         {comment.userId && typeof comment.userId !== 'string' && comment.userId.profilePicture ? (
                           <img
-                            src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${comment.userId.profilePicture}`}
+                            src={getImageUrl(comment.userId.profilePicture)}
                             alt={comment.userId.username}
                             className="w-8 h-8 rounded-full object-cover"
                           />

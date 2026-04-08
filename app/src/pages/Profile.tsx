@@ -17,6 +17,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import { getImageUrl } from '@/utils/imageUrl';
 import {
   User,
   MapPin,
@@ -344,9 +345,7 @@ export default function Profile() {
                 <div className="w-24 h-24 bg-blue-100 dark:bg-neutral-700 rounded-full flex items-center justify-center overflow-hidden">
                   {profile.profilePicture ? (
                     <img
-                      src={profile.profilePicture.startsWith('http')
-                        ? profile.profilePicture
-                        : `${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000'}${profile.profilePicture}`}
+                      src={getImageUrl(profile.profilePicture)}
                       alt={profile.username}
                       className="w-24 h-24 rounded-full object-cover"
                     />

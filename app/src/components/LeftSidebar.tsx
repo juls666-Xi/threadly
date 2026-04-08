@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { User, Users, MessageCircle, Home, Loader2, Moon, Sun } from 'lucide-react';
 import { userAPI } from '@/services/api';
+import { getImageUrl } from '@/utils/imageUrl';
 import type { User as UserType } from '@/types';
 
 export default function LeftSidebar() {
@@ -68,7 +69,7 @@ export default function LeftSidebar() {
               >
                 {currentUser?.profilePicture ? (
                   <img
-                    src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${currentUser.profilePicture}`}
+                    src={getImageUrl(currentUser.profilePicture)}
                     alt={currentUser.username}
                     className="w-20 h-20 rounded-full object-cover"
                   />

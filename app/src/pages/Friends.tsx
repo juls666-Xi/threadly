@@ -12,6 +12,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import { getImageUrl } from '@/utils/imageUrl';
 import {
   User,
   UserPlus,
@@ -256,7 +257,7 @@ export default function Friends() {
                             <div className="w-12 h-12 bg-blue-100 dark:bg-neutral-700 rounded-full flex items-center justify-center">
                               {friend.profilePicture ? (
                                 <img
-                                  src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${friend.profilePicture}`}
+                                  src={getImageUrl(friend.profilePicture)}
                                   alt={friend.username}
                                   className="w-12 h-12 rounded-full object-cover"
                                 />
@@ -324,7 +325,7 @@ export default function Friends() {
                           <div className="w-12 h-12 bg-blue-100 dark:bg-neutral-700 rounded-full flex items-center justify-center">
                             {request.requester.profilePicture ? (
                               <img
-                                src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${request.requester.profilePicture}`}
+                                src={getImageUrl(request.requester.profilePicture)}
                                 alt={request.requester.username}
                                 className="w-12 h-12 rounded-full object-cover"
                               />
@@ -401,7 +402,7 @@ export default function Friends() {
                           <div className="w-12 h-12 bg-blue-100 dark:bg-neutral-700 rounded-full flex items-center justify-center">
                             {user.profilePicture ? (
                               <img
-                                src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${user.profilePicture}`}
+                                src={getImageUrl(user.profilePicture)}
                                 alt={user.username}
                                 className="w-12 h-12 rounded-full object-cover"
                               />

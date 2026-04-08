@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { getImageUrl } from '@/utils/imageUrl';
 import { MessageSquare, Search, User, LogOut, Settings, Bell, Menu } from 'lucide-react';
 
 interface NavbarProps {
@@ -84,7 +85,7 @@ export default function Navbar({ onSearch, onMenuClick }: NavbarProps) {
                   <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                     {user?.profilePicture ? (
                       <img
-                        src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${user.profilePicture}`}
+                        src={getImageUrl(user.profilePicture)}
                         alt={user.username}
                         className="w-8 h-8 rounded-full object-cover"
                       />
