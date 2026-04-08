@@ -86,14 +86,48 @@ export default function Messages() {
     loadConversation();
   }, [userId]);
 
+  // Listen for avatar updates from other users via socket
+  useEffect(() => {
+    const handleAvatarUpdated = (data: { userId: string; avatar: string; username: string }) => {
+      // Update selectedUser if it matches
+      if (selectedUser && data.userId === selectedUser.id) {
+        setSelectedUser({ ...selectedUser, profilePicture: data.avatar });
+      }
+
+      // Update in conversations list
+      setConversations(prev =>
+        prev.map(conv =>
+          conv.friend.id === data.userId
+            ? { ...conv, friend: { ...conv.friend, profilePicture: data.avatar } }
+            : conv
+        )
+      );
+
+      // Update in friends list
+      setFriends(prev =>
+        prev.map(friend =>
+          friend.id === data.userId
+            ? { ...friend, profilePicture: data.avatar }
+            : friend
+        )
+      );
+    };
+
+    socketService.onAvatarUpdated(handleAvatarUpdated);
+
+    return () => {
+      socketService.offAvatarUpdated(handleAvatarUpdated);
+    };
+  }, [selectedUser]);
+
   // Listen for new messages
   useEffect(() => {
     const unsubscribe = socketService.onMessage((message) => {
       // Check if message belongs to current conversation
-      const senderId = typeof message.senderId === 'string' 
-        ? message.senderId 
+      const senderId = typeof message.senderId === 'string'
+        ? message.senderId
         : message.senderId._id || message.senderId.id;
-      
+
       const isRelevant = senderId === userId || senderId === currentUser?.id;
 
       if (isRelevant) {
@@ -376,7 +410,7 @@ export default function Messages() {
                           <div className="w-10 h-10 bg-blue-100 dark:bg-neutral-700 rounded-full flex items-center justify-center">
                             {conv.friend.profilePicture ? (
                               <img
-                                src={conv.friend.profilePicture}
+                                src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${conv.friend.profilePicture}`}
                                 alt={conv.friend.username}
                                 className="w-10 h-10 rounded-full object-cover"
                               />
@@ -433,7 +467,7 @@ export default function Messages() {
                     <div className="w-10 h-10 bg-blue-100 dark:bg-neutral-700 rounded-full flex items-center justify-center">
                       {selectedUser.profilePicture ? (
                         <img
-                          src={selectedUser.profilePicture}
+                          src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${selectedUser.profilePicture}`}
                           alt={selectedUser.username}
                           className="w-10 h-10 rounded-full object-cover"
                         />
