@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import type { User } from '@/types';
+import { socketService } from '@/services/socket';
 
 interface AuthContextType {
   user: User | null;
@@ -22,12 +23,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check for stored auth data on mount
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
-    
+
     if (storedToken && storedUser) {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
     }
     setIsLoading(false);
+  }, []);
+
+  // Listen for avatar updates
+  useEffect(() => {
+    const handleAvatarUpdated = (data: { userId: string; avatar: string; username: string }) => {
+      setUser(prevUser => {
+        if (prevUser && data.userId === prevUser.id) {
+          const updatedUser = { ...prevUser, profilePicture: data.avatar };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          return updatedUser;
+        }
+        return prevUser;
+      });
+    };
+
+    socketService.onAvatarUpdated(handleAvatarUpdated);
+
+    return () => {
+      socketService.offAvatarUpdated(handleAvatarUpdated);
+    };
   }, []);
 
   const login = (newToken: string, newUser: User) => {

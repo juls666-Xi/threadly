@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@/context/ThemeContext';
+import { socketService } from '@/services/socket';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { User, Users, MessageCircle, Home, Loader2, Moon, Sun } from 'lucide-react';
@@ -27,6 +28,21 @@ export default function LeftSidebar() {
 
     fetchUser();
   }, []);
+
+  // Listen for avatar updates
+  useEffect(() => {
+    const handleAvatarUpdated = (data: { userId: string; avatar: string; username: string }) => {
+      if (currentUser && data.userId === currentUser.id) {
+        setCurrentUser({ ...currentUser, profilePicture: data.avatar });
+      }
+    };
+
+    socketService.onAvatarUpdated(handleAvatarUpdated);
+
+    return () => {
+      socketService.offAvatarUpdated(handleAvatarUpdated);
+    };
+  }, [currentUser]);
 
   const menuItems = [
     { icon: Home, label: 'Home', path: '/' },

@@ -42,9 +42,23 @@ export default function RightSidebar() {
       });
     });
 
+    // Listen for avatar updates
+    const handleAvatarUpdated = (data: { userId: string; avatar: string; username: string }) => {
+      setFriends(prev =>
+        prev.map(friend =>
+          friend.id === data.userId
+            ? { ...friend, profilePicture: data.avatar }
+            : friend
+        )
+      );
+    };
+
+    socketService.onAvatarUpdated(handleAvatarUpdated);
+
     return () => {
       unsubscribeOnline();
       unsubscribeOffline();
+      socketService.offAvatarUpdated(handleAvatarUpdated);
     };
   }, []);
 
