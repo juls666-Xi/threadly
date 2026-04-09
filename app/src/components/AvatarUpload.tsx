@@ -116,7 +116,7 @@ export default function AvatarUpload({ user, onAvatarUpdate, size = 'md' }: Avat
         {!isUploading && !selectedFile && (
           <label
             htmlFor="avatar-upload"
-            className="absolute -bottom-1 -right-1 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-1.5 cursor-pointer shadow-md transition-all opacity-0 group-hover:opacity-100"
+            className="absolute -bottom-1 -right-1 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-1.5 cursor-pointer shadow-md transition-all md:opacity-0 md:group-hover:opacity-100"
           >
             <Camera className={iconSizeMap[size === 'sm' ? 'sm' : 'md']} />
           </label>
