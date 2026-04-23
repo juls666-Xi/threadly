@@ -10,10 +10,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, MoreHorizontal, Trash2, Clock, ThumbsUp, MessageCircle, Send } from 'lucide-react';
+import { User, MoreHorizontal, Trash2, Clock, ThumbsUp, MessageCircle, Send, Share2 } from 'lucide-react';
 import { getImageUrl } from '@/utils/imageUrl';
 import { postAPI } from '@/services/api';
 import type { Post, Comment } from '@/types';
+import { toast } from 'sonner';
 
 interface PostCardProps {
   post: Post;
@@ -117,6 +118,12 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
     }
   };
 
+  const handleShare = () => {
+    const postUrl = `${window.location.origin}/post/${localPost._id}`;
+    navigator.clipboard.writeText(postUrl);
+    toast.success('Post link copied to clipboard!');
+  };
+
   return (
     <Card className="mb-4 bg-card border-border">
       <CardContent className="p-4">
@@ -206,6 +213,16 @@ export default function PostCard({ post, onDelete }: PostCardProps) {
           >
             <MessageCircle className="h-4 w-4" />
             <span>{localPost.comments?.length || 0}</span>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleShare}
+            className="flex items-center space-x-1 text-muted-foreground"
+          >
+            <Share2 className="h-4 w-4" />
+            <span>Share</span>
           </Button>
         </div>
 

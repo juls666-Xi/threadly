@@ -7,6 +7,7 @@ import Home from '@/pages/Home';
 import Profile from '@/pages/Profile';
 import Messages from '@/pages/Messages';
 import Friends from '@/pages/Friends';
+import PostPage from '@/pages/PostPage';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             <Route path="/messages" element={<Messages />} />
             <Route path="/messages/:userId" element={<Messages />} />
             <Route path="/friends" element={<Friends />} />
+            <Route path="/post/:id" element={<PostPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>

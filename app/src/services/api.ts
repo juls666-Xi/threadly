@@ -108,6 +108,11 @@ export const postAPI = {
     const response = await api.get('/posts');
     return response.data;
   },
+
+  getPost: async (postId: string): Promise<Post> => {
+    const response = await api.get(`/posts/${postId}`);
+    return response.data;
+  },
   
   getUserPosts: async (userId: string): Promise<Post[]> => {
     const response = await api.get(`/posts/user/${userId}`);
